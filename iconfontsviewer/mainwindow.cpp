@@ -23,6 +23,8 @@
 
 #ifdef ICONFONTS_ENABLE_QUICKWIDGET
 
+#include <QQmlComponent>
+#include <QQuickItem>
 #include <QQuickWidget>
 
 #else
@@ -277,7 +279,17 @@ QLayout *MainWindow::createPreviewLayout()
     m_graphicalPreview->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     m_quickPreview->setMinimumSize(240, 400);
+    m_quickPreview->setClearColor(Qt::transparent);
+    m_quickPreview->setAttribute(Qt::WA_AlwaysStackOnTop);
+    m_quickPreview->setAttribute(Qt::WA_TranslucentBackground);
     m_quickPreview->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_quickPreview->setResizeMode(QQuickWidget::SizeRootObjectToView);
+
+    auto component = QQmlComponent{m_quickPreview->engine()};
+    component.setData(R"(import QtQuick; Text { renderTypeQuality: Text.VeryHighRenderTypeQuality })", QUrl{});
+    m_quickPreview->setContent(component.url(), &component, component.create(m_quickPreview->rootContext()));
+    m_quickPreview->rootObject()->setProperty("horizontalAlignment", Qt::AlignHCenter);
+    m_quickPreview->rootObject()->setProperty("verticalAlignment", Qt::AlignVCenter);
 
     m_fontSize->setMinimumWidth(135);
     m_fontSize->setValue(200);
@@ -435,15 +447,24 @@ void MainWindow::updateTextualPreview()
     const auto &newIcon = icon();
     const auto &newFont = makeFont(newIcon, m_graphicalPreview->options());
     const auto &options = m_graphicalPreview->options();
+    const auto quickText = m_quickPreview->rootObject();
 
     if (newIcon.symbol().isNull()) {
         m_textualPreview->setFont({});
         m_textualPreview->setText(tr("no icon selected"));
         m_textualPreview->setEnabled(false);
+
+        quickText->setProperty("font", QFont{});
+        quickText->setProperty("text", tr("no icon selected"));
+        m_quickPreview->setEnabled(false);
     } else {
         m_textualPreview->setFont(newFont);
         m_textualPreview->setText(newIcon.symbol());
         m_textualPreview->setEnabled(options.iconMode != QIcon::Disabled);
+
+        quickText->setProperty("font", newFont);
+        quickText->setProperty("text", newIcon.symbol().toString());
+        m_quickPreview->setEnabled(options.iconMode != QIcon::Disabled);
     }
 
     if (options.applyColor
@@ -452,8 +473,13 @@ void MainWindow::updateTextualPreview()
         const auto &newColorName = newIcon.color().name();
         const auto &styleSheet = u"color: %1"_s.arg(newColorName);
         m_textualPreview->setStyleSheet(styleSheet);
+        quickText->setProperty("color", newIcon.color());
     } else {
         m_textualPreview->setStyleSheet({});
+
+        const auto &palette = m_quickPreview->palette();
+        const auto role = m_quickPreview->foregroundRole();
+        quickText->setProperty("color", palette.color(role));
     }
 }
 
