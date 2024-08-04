@@ -485,6 +485,9 @@ int FontInfo::indexOf(char32_t unicode) const
 
     thread_local static auto s_indexes = MetaTypeUnicodeIndexMap{};
 
+    if (Q_UNLIKELY(isNull()))
+        return -1;
+
     auto mapIt = s_indexes.find(d->enumType.id());
 
     if (Q_UNLIKELY(mapIt == s_indexes.end())) {

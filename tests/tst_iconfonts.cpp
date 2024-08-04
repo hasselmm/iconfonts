@@ -365,6 +365,46 @@ private slots:
         QVERIFY2(badSymbols.isEmpty(), qPrintable(badSymbols.join(u", "_s)));
     }
 
+    void testSymbolProperties_data()
+    {
+        QTest::addColumn<Symbol>("symbol");
+        QTest::addColumn<bool>("expectedIsNull");
+        QTest::addColumn<QFont>("expectedFont");
+        QTest::addColumn<QString>("expectedName");
+        QTest::addColumn<char32_t>("expectedUnicode");
+
+        QTest::newRow("default") << Symbol{} << true << QFont{} << QString{} << char32_t{};
+        QTest::newRow("SolidStar") << Symbol{SolidStar} << false << font<decltype(SolidStar)>() << "SolidStar" << unicode(SolidStar);
+    }
+
+    void testSymbolProperties()
+    {
+        const QFETCH(Symbol,   symbol);
+        const QFETCH(bool,     expectedIsNull);
+        const QFETCH(QFont,    expectedFont);
+        const QFETCH(QString,  expectedName);
+        const QFETCH(char32_t, expectedUnicode);
+
+        QCOMPARE(symbol.isNull(),   expectedIsNull);
+        QCOMPARE(symbol.font(),     expectedFont);
+        QCOMPARE(symbol.name(),     expectedName);
+        QCOMPARE(symbol.unicode(),  expectedUnicode);
+
+        const auto &mo = Symbol::staticMetaObject;
+
+        const auto    fontProperty = mo.property(mo.indexOfProperty("font"));
+        const auto    nameProperty = mo.property(mo.indexOfProperty("name"));
+        const auto unicodeProperty = mo.property(mo.indexOfProperty("unicode"));
+
+        QVERIFY(   fontProperty.isValid());
+        QVERIFY(   nameProperty.isValid());
+        QVERIFY(unicodeProperty.isValid());
+
+        QCOMPARE(   fontProperty.readOnGadget(&symbol), expectedFont);
+        QCOMPARE(   nameProperty.readOnGadget(&symbol), expectedName);
+        QCOMPARE(unicodeProperty.readOnGadget(&symbol), expectedUnicode);
+    }
+
     void testKnownFontsCount()
     {
         QCOMPARE(FontInfo::knownFonts().count(), 52);
