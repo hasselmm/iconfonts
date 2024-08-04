@@ -1,0 +1,32 @@
+/* Generated on ${CODEGEN_TIMESTAMP} from:
+ * ${CODEGEN_INFO_FILEPATH}
+ * ${CODEGEN_LIST_FILEPATH}
+ */
+#ifndef ${CODEGEN_HEADER_GUARD}
+#define ${CODEGEN_HEADER_GUARD}
+
+#include "iconfonts.h"
+
+namespace IconFonts::inline Symbols::${CODEGEN_FONT_NAMESPACE} {
+
+Q_NAMESPACE_EXPORT(ICONFONTS_EXPORT)
+
+enum class Symbol : char32_t {
+${CODEGEN_ICON_DEFINITIONS}
+};
+
+Q_ENUM_NS(Symbol)
+using enum Symbol;
+
+} // namespace IconFonts::inline Symbols::${CODEGEN_FONT_NAMESPACE}
+
+namespace IconFonts::inline Fonts {
+using ${CODEGEN_FONT_FAMILY_SYMBOL}${CODEGEN_FONT_VARIANT_SYMBOL} = Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol;
+} // namespace IconFonts::inline Fonts
+
+namespace IconFonts {
+template<> struct is_symbol_enum<Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol> : public std::true_type {};
+template<> inline constexpr FontInfo::Type type<Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol>() { return FontInfo::Type::${CODEGEN_FONT_TYPE}; }
+} // IconFonts
+
+#endif // ${CODEGEN_HEADER_GUARD}

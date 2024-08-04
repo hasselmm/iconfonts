@@ -1,0 +1,3 @@
+[submodule "namedoptions"]
+	path = namedoptions
+	url = https://github.com/hasselmm/namedoptions.git

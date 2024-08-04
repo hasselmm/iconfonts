@@ -1,0 +1,39 @@
+/* Generated on ${CODEGEN_TIMESTAMP} from:
+ * ${CODEGEN_INFO_FILEPATH}
+ * ${CODEGEN_LIST_FILEPATH}
+ */
+#include "${CODEGEN_HEADER}"
+#include "iconfonts_p.h"
+
+[[nodiscard]] static bool initIconFonts${CODEGEN_FONT_FAMILY_SYMBOL}${CODEGEN_FONT_VARIANT_SYMBOL}Resource()
+{
+    static const auto s_initialized = [] {
+        Q_INIT_RESOURCE(${CODEGEN_RESOURCE_SYMBOL});
+        return true;
+    }();
+
+    return s_initialized;
+}
+
+namespace IconFonts {
+
+using namespace Qt::StringLiterals;
+
+template<> ICONFONTS_EXPORT QString fontName<Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol>()
+{ return u"${CODEGEN_FONT_NAME}"_s; }
+
+template<> ICONFONTS_EXPORT QString fontFamily<Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol>()
+{ return ${CODEGEN_FONT_FAMILY_EXPRESSION}; }
+
+template<> ICONFONTS_EXPORT QString fontFileName<Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol>()
+{ return ${CODEGEN_FONT_FILENAME_LITERAL}; }
+
+template<> ICONFONTS_EXPORT QString licenseFileName<Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol>()
+{ return u":${CODEGEN_LICENSE_FILEPATH}"_s; }
+
+template<> ICONFONTS_EXPORT bool Private::loadResources<Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol>()
+{ return initIconFonts${CODEGEN_FONT_FAMILY_SYMBOL}${CODEGEN_FONT_VARIANT_SYMBOL}Resource(); }
+
+template const FontInfo &FontInfo::instance<Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol>() noexcept;
+
+} // namespace IconFonts

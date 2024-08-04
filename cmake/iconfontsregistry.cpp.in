@@ -1,0 +1,20 @@
+/* Generated on ${CODEGEN_TIMESTAMP} from:
+ * ${CODEGEN_LIST_FILEPATH}
+ */
+#include "iconfonts.h"
+${CODEGEN_INCLUDE_LIST}
+
+#include <QList>
+
+namespace IconFonts {
+
+QList<FontInfo> FontInfo::knownFonts()
+{
+    static const auto s_knownFonts = QList<FontInfo> {
+${CODEGEN_FONT_TYPE_LIST}
+    };
+
+    return s_knownFonts;
+}
+
+} // namespace IconFonts
