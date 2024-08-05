@@ -178,11 +178,38 @@ QActionGroup *createActionGroup(QObject *parent)
     return actionGroup;
 }
 
-QLabel *createCaption(const QString &text, QWidget *parent)
+struct SizePolicy
 {
-    const auto label = new QLabel{text, parent};
+    std::optional<QSizePolicy::Policy> horizontalPolicy = {};
+    std::optional<QSizePolicy::Policy> verticalPolicy = {};
+
+    std::optional<int> horizontalStretch = {};
+    std::optional<int> verticalStretch = {};
+};
+
+void setSizePolicy(QWidget *widget, const SizePolicy &newPolicy)
+{
+    auto sizePolicy = widget->sizePolicy();
+
+    if (newPolicy.horizontalPolicy.has_value())
+        sizePolicy.setHorizontalPolicy(newPolicy.horizontalPolicy.value());
+    if (newPolicy.horizontalStretch.has_value())
+        sizePolicy.setHorizontalStretch(newPolicy.horizontalStretch.value());
+
+    if (newPolicy.verticalPolicy.has_value())
+        sizePolicy.setVerticalPolicy(newPolicy.verticalPolicy.value());
+    if (newPolicy.verticalStretch.has_value())
+        sizePolicy.setVerticalStretch(newPolicy.verticalStretch.value());
+
+    widget->setSizePolicy(sizePolicy);
+}
+
+QLabel *createCaption(QWidget *parent)
+{
+    const auto label = new QLabel{parent};
     label->setStyleSheet(u"font-weight: bold"_s);
     label->setAlignment(Qt::AlignHCenter | Qt::AlignBottom);
+    setSizePolicy(label, {.horizontalPolicy = QSizePolicy::Expanding, .horizontalStretch = 1});
     return label;
 };
 
@@ -209,6 +236,8 @@ MainWindow::MainWindow(QWidget *parent)
     , m_graphicalPreview{new IconPreview{this}}
     , m_textualPreview{new QLabel{this}}
     , m_quickPreview{new QQuickWidget{this}}
+    , m_leftPreviewGroup{createActionGroup<PreviewType>(this)}
+    , m_rightPreviewGroup{createActionGroup<PreviewType>(this)}
 {
     const auto layout = new QHBoxLayout{this};
 
@@ -272,24 +301,43 @@ QLayout *MainWindow::createSymbolListLayout()
 QLayout *MainWindow::createPreviewLayout()
 {
     m_textualPreview->setAlignment(Qt::AlignCenter);
-    m_textualPreview->setMinimumSize(240, 400);
-    m_textualPreview->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_textualPreview->setMinimumSize(300, 400);
+    m_textualPreview->hide();
 
-    m_graphicalPreview->setMinimumSize(240, 400);
+    m_graphicalPreview->setMinimumSize(300, 400);
     m_graphicalPreview->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_graphicalPreview->hide();
 
-    m_quickPreview->setMinimumSize(240, 400);
+    m_quickPreview->setMinimumSize(300, 400);
     m_quickPreview->setClearColor(Qt::transparent);
     m_quickPreview->setAttribute(Qt::WA_AlwaysStackOnTop);
     m_quickPreview->setAttribute(Qt::WA_TranslucentBackground);
     m_quickPreview->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_quickPreview->setResizeMode(QQuickWidget::SizeRootObjectToView);
+    m_quickPreview->hide();
 
     auto component = QQmlComponent{m_quickPreview->engine()};
     component.setData(R"(import QtQuick; Text { renderTypeQuality: Text.VeryHighRenderTypeQuality })", QUrl{});
     m_quickPreview->setContent(component.url(), &component, component.create(m_quickPreview->rootContext()));
-    m_quickPreview->rootObject()->setProperty("horizontalAlignment", Qt::AlignHCenter);
-    m_quickPreview->rootObject()->setProperty("verticalAlignment", Qt::AlignVCenter);
+    m_quickPreview->hide();
+
+    Viewer::setSizePolicy(m_textualPreview, {
+                              .horizontalPolicy = QSizePolicy::Expanding,
+                              .verticalPolicy = QSizePolicy::Expanding,
+                              .horizontalStretch = 1,
+                          });
+
+    Viewer::setSizePolicy(m_graphicalPreview, {
+                              .horizontalPolicy = QSizePolicy::Expanding,
+                              .verticalPolicy = QSizePolicy::Expanding,
+                              .horizontalStretch = 1,
+                          });
+
+    Viewer::setSizePolicy(m_quickPreview, {
+                              .horizontalPolicy = QSizePolicy::Expanding,
+                              .verticalPolicy = QSizePolicy::Expanding,
+                              .horizontalStretch = 1,
+                          });
 
     m_fontSize->setMinimumWidth(135);
     m_fontSize->setValue(200);
@@ -304,7 +352,9 @@ QLayout *MainWindow::createPreviewLayout()
     const auto transformGroup = createActionGroup<FontIcon::Transform>(this);
 
     const auto toolBar = new QToolBar{this};
+
     toolBar->setStyleSheet(u"QToolBar::separator { background: transparent; width: 12 }"_s);
+    Viewer::setSizePolicy(toolBar, {.horizontalPolicy = QSizePolicy::Expanding, .horizontalStretch = 2});
 
     toolBar->addWidget(m_fontSize);
     toolBar->addSeparator();
@@ -315,15 +365,25 @@ QLayout *MainWindow::createPreviewLayout()
     toolBar->addSeparator();
     toolBar->addActions(transformGroup->actions());
 
+    const auto leftPreviewSelector = new QToolBar{this};
+
+    leftPreviewSelector->addActions(m_leftPreviewGroup->actions());
+    Viewer::setSizePolicy(leftPreviewSelector, {.horizontalPolicy = QSizePolicy::Fixed, .horizontalStretch = 1});
+
+    const auto rightPreviewSelector = new QToolBar{this};
+
+    rightPreviewSelector->addActions(m_rightPreviewGroup->actions());
+    Viewer::setSizePolicy(rightPreviewSelector, {.horizontalPolicy = QSizePolicy::Fixed, .horizontalStretch = 1});
+
     const auto layout = new QGridLayout;
 
-    layout->addWidget(toolBar, 0, 0, 1, 3);
-    layout->addWidget(m_textualPreview, 1, 0);
-    layout->addWidget(m_graphicalPreview, 1, 1);
-    layout->addWidget(m_quickPreview, 1, 2);
-    layout->addWidget(createCaption(tr("Text Rendering"), this), 2, 0);
-    layout->addWidget(createCaption(tr("Graphical Rendering"), this), 2, 1);
-    layout->addWidget(createCaption(tr("QtQuick Rendering"), this), 2, 2);
+    layout->addWidget(toolBar, ToolBar, Left, 1, 2);
+    layout->addWidget(m_textualPreview, Preview, Left);
+    layout->addWidget(m_graphicalPreview, Preview, Right);
+    layout->addWidget(createCaption(this), Caption, Left, Qt::AlignCenter);
+    layout->addWidget(createCaption(this), Caption, Right, Qt::AlignCenter);
+    layout->addWidget(leftPreviewSelector, Selector, Left, Qt::AlignCenter);
+    layout->addWidget(rightPreviewSelector, Selector, Right, Qt::AlignCenter);
 
     connect(m_colorAction, &QAction::triggered,
             this, &MainWindow::onColorActionTriggered);
@@ -347,9 +407,75 @@ QLayout *MainWindow::createPreviewLayout()
     connect(m_graphicalPreview, &IconPreview::optionsChanged,
             this, &MainWindow::updateTextualPreview);
 
+    setupPreviewSelector(layout, Left);
+    setupPreviewSelector(layout, Right);
     setFontSizeMode(m_fontSize->mode());
 
     return layout;
+}
+
+void MainWindow::setupPreviewSelector(QGridLayout *layout,PreviewColumn column)
+{
+    const auto self = (column == Left ? m_leftPreviewGroup : m_rightPreviewGroup);
+    const auto other = (column == Right ? m_leftPreviewGroup : m_rightPreviewGroup);
+
+    connect(self, &QActionGroup::triggered, self, [this, self, other, layout, column](QAction *action) {
+        const auto &otherActionList = other->actions();
+        const auto &ownActionList = self->actions();
+
+        for (const auto otherAction : otherActionList)
+            otherAction->setEnabled(true);
+
+        auto index = ownActionList.indexOf(action);
+
+        if (const auto otherAction = otherActionList.value(index)) {
+            if (otherAction->isChecked())
+                otherActionList[(index + 1) % otherActionList.count()]->trigger();
+        }
+
+        const auto captionItem = layout->itemAtPosition(Caption, column);
+        Q_ASSERT(captionItem != nullptr);
+
+        const auto caption = dynamic_cast<QLabel *>(captionItem->widget());
+        Q_ASSERT(caption != nullptr);
+
+        auto previewWidget = static_cast<QWidget *>(nullptr);
+
+        switch(qvariant_cast<PreviewType>(action->data())) {
+        case PreviewType::Painter:
+            caption->setText(tr("Icon preview via QPainter from QtGui"));
+            previewWidget = m_graphicalPreview;
+            break;
+
+        case PreviewType::Widget:
+            caption->setText(tr("Icon preview via QLabel from QtWidgets"));
+            previewWidget = m_textualPreview;
+            break;
+
+        case PreviewType::Quick:
+            caption->setText(tr("Icon preview via Text item from QtQuick"));
+            previewWidget = m_quickPreview;
+            break;
+        }
+
+        Q_ASSERT(previewWidget != nullptr);
+
+        if (const auto item = layout->itemAtPosition(Preview, column))
+            if (const auto widget = item->widget())
+                widget->hide();
+
+        if (const auto index = layout->indexOf(previewWidget)) {
+            if (const auto item = layout->takeAt(index)) {
+                Q_ASSERT(item->widget() == previewWidget);
+                delete item;
+            }
+        }
+
+        layout->addWidget(previewWidget, Preview, column);
+        previewWidget->show();
+    });
+
+    self->actions().constFirst()->trigger();
 }
 
 void MainWindow::onSelectedFontChanged()
