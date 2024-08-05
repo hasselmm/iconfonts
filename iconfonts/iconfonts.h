@@ -267,17 +267,16 @@ class ICONFONTS_EXPORT FontIcon final
 
 public:
     enum class Transform {
-        None = 0,
-        HorizontalFlip  = (1 << 0),
-        VerticalFlip    = (1 << 1),
-        Rotate90        = (1 << 2),
-        Rotate180       = (1 << 3),
-        Rotate270       = (1 << 4),
-        Matrix          = (1 << 30),
+        None,
+        HorizontalFlip,
+        VerticalFlip,
+        Rotate90,
+        Rotate180,
+        Rotate270,
+        Matrix,
     };
 
-    Q_FLAG(Transform);
-    Q_DECLARE_FLAGS(Transforms, Transform);
+    Q_ENUM(Transform);
 
     // forwarding constructors
 
@@ -364,8 +363,6 @@ private:
     QColor              m_color;
     QPalette::ColorRole m_role = QPalette::Text;
 };
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(FontIcon::Transforms)
 
 // implementations // --------------------------------------------------------------------------------------------------
 
