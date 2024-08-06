@@ -392,14 +392,17 @@ private slots:
 
         const auto &mo = Symbol::staticMetaObject;
 
+        const auto  isNullProperty = mo.property(mo.indexOfProperty("isNull"));
         const auto    fontProperty = mo.property(mo.indexOfProperty("font"));
         const auto    nameProperty = mo.property(mo.indexOfProperty("name"));
         const auto unicodeProperty = mo.property(mo.indexOfProperty("unicode"));
 
+        QVERIFY( isNullProperty.isValid());
         QVERIFY(   fontProperty.isValid());
         QVERIFY(   nameProperty.isValid());
         QVERIFY(unicodeProperty.isValid());
 
+        QCOMPARE( isNullProperty.readOnGadget(&symbol), expectedIsNull);
         QCOMPARE(   fontProperty.readOnGadget(&symbol), expectedFont);
         QCOMPARE(   nameProperty.readOnGadget(&symbol), expectedName);
         QCOMPARE(unicodeProperty.readOnGadget(&symbol), expectedUnicode);

@@ -196,6 +196,12 @@ inline const FontInfo::Data *FontInfo::Data::instance()
 
 class ICONFONTS_EXPORT Symbol final
 {
+    Q_GADGET
+    Q_PROPERTY(bool    isNull  READ isNull  CONSTANT FINAL)
+    Q_PROPERTY(QFont   font    READ font    CONSTANT FINAL)
+    Q_PROPERTY(QString name    READ name    CONSTANT FINAL)
+    Q_PROPERTY(uint    unicode READ unicode CONSTANT FINAL)
+
 public:
     constexpr Symbol() noexcept = default;
 
