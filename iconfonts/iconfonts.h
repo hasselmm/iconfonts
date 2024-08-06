@@ -29,11 +29,9 @@ template<typename T> concept symbol_enum = std::is_enum_v<T> && is_symbol_enum_v
 
 template<typename T> struct is_symbol : public std::disjunction<is_symbol_enum<T>, std::is_same<Symbol, T>> {};
 template<typename T> constexpr bool is_symbol_v = is_symbol<T>::value;
-template<typename T> concept symbol_type = is_symbol_v<T>;
 
 template<typename T> struct is_icon : public std::is_same<FontIcon, T> {};
 template<typename T> constexpr bool is_icon_v = is_icon<T>::value;
-template<typename T> concept icon_type = is_icon_v<T>;
 
 template<typename T> struct is_icon_assignable : public std::disjunction<is_symbol<T>, is_icon<T>> {};
 template<typename T> constexpr bool is_icon_initializer_v = is_icon_assignable<T>::value;
@@ -160,38 +158,6 @@ private:
     const Data *d = nullptr;
 };
 
-template<symbol_enum S> [[nodiscard]] ICONFONTS_EXPORT QFont font();
-template<symbol_enum S> [[nodiscard]] ICONFONTS_EXPORT FontId fontId();
-template<symbol_enum S> [[nodiscard]] constexpr FontInfo::Type type();
-template<symbol_enum S> [[nodiscard]] ICONFONTS_EXPORT QString fontName();
-template<symbol_enum S> [[nodiscard]] ICONFONTS_EXPORT QString fontFamily();
-template<symbol_enum S> [[nodiscard]] ICONFONTS_EXPORT QString fontFileName();
-template<symbol_enum S> [[nodiscard]] ICONFONTS_EXPORT QString licenseFileName();
-template<symbol_enum S> [[nodiscard]] ICONFONTS_EXPORT QString licenseText();
-
-namespace Private {
-template<symbol_enum S> [[nodiscard]] ICONFONTS_EXPORT bool loadResources();
-} // namespace Private
-
-template<symbol_enum S>
-constexpr FontInfo::Data::Data(S)
-    : type{IconFonts::type<S>()}
-    , enumType{QMetaType::fromType<S>()}
-    , fontId{&IconFonts::fontId<S>}
-    , fontName{&IconFonts::fontName<S>}
-    , fontFamily{&IconFonts::fontFamily<S>}
-    , licenseFileName{&IconFonts::licenseFileName<S>}
-    , licenseText{&IconFonts::licenseText<S>}
-    , font{&IconFonts::font<S>}
-{}
-
-template<symbol_enum S>
-inline const FontInfo::Data *FontInfo::Data::instance()
-{
-    thread_local static constexpr auto s_instance = Data{S{}};
-    return &s_instance;
-}
-
 // Symbol class // =====================================================================================================
 
 class ICONFONTS_EXPORT Symbol final
@@ -204,20 +170,24 @@ class ICONFONTS_EXPORT Symbol final
 
 public:
     constexpr Symbol() noexcept = default;
+
+    template<symbol_enum S>
+    constexpr Symbol(S symbol) noexcept
+        : m_font{FontInfo::instance<S>()}
+        , m_unicode{std::to_underlying(symbol)}
+    {}
+
     constexpr Symbol(const FontInfo &font, char32_t unicode) noexcept
         : m_font{font}
         , m_unicode{unicode}
     {}
 
-    template<symbol_enum S>
-    constexpr Symbol(S symbol) noexcept;
-
     [[nodiscard]] constexpr char32_t unicode() const { return m_unicode; }
     [[nodiscard]] inline FontInfo fontInfo() const { return m_font; }
-    [[nodiscard]] inline const char *key() const;
-    [[nodiscard]] inline QString name() const;
-    [[nodiscard]] inline bool isNull() const;
-    [[nodiscard]] inline QFont font() const;
+    [[nodiscard]] inline const char *key() const { return m_font.key(m_font.indexOf(m_unicode)); }
+    [[nodiscard]] inline QString name() const { return m_font.name(m_font.indexOf(m_unicode)); }
+    [[nodiscard]] inline bool isNull() const { return m_font.isNull(); }
+    [[nodiscard]] inline QFont font() const { return m_font.font(); }
 
     [[nodiscard]] QString toString() const
     {
@@ -236,21 +206,6 @@ private:
     FontInfo m_font;
     char32_t m_unicode = 0;
 };
-
-// implementations // --------------------------------------------------------------------------------------------------
-
-template<symbol_enum S>
-constexpr Symbol::Symbol(S symbol) noexcept
-    : m_font{FontInfo::instance<S>()}
-    , m_unicode{std::to_underlying(symbol)}
-{}
-
-const char *Symbol::key() const { return m_font.key(m_font.indexOf(m_unicode)); }
-QString Symbol::name() const { return m_font.name(m_font.indexOf(m_unicode)); }
-QFont Symbol::font() const { return m_font.font(); }
-bool Symbol::isNull() const { return m_font.isNull(); }
-
-Symbol FontInfo::symbol(int index) const { return {*this, unicode(index)}; }
 
 // FontIcon class // ===================================================================================================
 
@@ -369,15 +324,6 @@ private:
     QPalette::ColorRole m_role = QPalette::Text;
 };
 
-// implementations // --------------------------------------------------------------------------------------------------
-
-bool FontIcon::isNull() const
-{
-    return m_symbol.isNull()
-            && !m_color.isValid()
-            && std::holds_alternative<std::monostate>(m_transform);
-}
-
 // ModalFontIcon struct // =============================================================================================
 
 struct ICONFONTS_EXPORT ModalFontIcon final
@@ -394,7 +340,8 @@ struct ICONFONTS_EXPORT ModalFontIcon final
     [[nodiscard]] operator QIcon() const { return toIcon(); }
 
     [[nodiscard]] constexpr auto fields() const { return std::tie(on, off); }
-    friend constexpr bool operator==(const ModalFontIcon &l, const ModalFontIcon &r) noexcept { return l.fields() == r.fields(); }
+    friend constexpr bool operator==(const ModalFontIcon &l, const ModalFontIcon &r) noexcept
+    { return l.fields() == r.fields(); }
 
     // operations
 
@@ -408,15 +355,26 @@ struct ICONFONTS_EXPORT ModalFontIcon final
 
 // freestanding observers // ===========================================================================================
 
-template<symbol_enum S>
-[[nodiscard]] constexpr char32_t unicode(S symbol) noexcept
-{ return std::to_underlying<S>(symbol); }
+template<symbol_enum S> [[nodiscard]] ICONFONTS_EXPORT QFont   font();
+template<symbol_enum S> [[nodiscard]] ICONFONTS_EXPORT FontId  fontId();
+template<symbol_enum S> [[nodiscard]] ICONFONTS_EXPORT QString fontName();
+template<symbol_enum S> [[nodiscard]] ICONFONTS_EXPORT QString fontFamily();
+template<symbol_enum S> [[nodiscard]] ICONFONTS_EXPORT QString fontFileName();
+template<symbol_enum S> [[nodiscard]] ICONFONTS_EXPORT QString licenseFileName();
+template<symbol_enum S> [[nodiscard]] ICONFONTS_EXPORT QString licenseText();
+template<symbol_enum S> [[nodiscard]] constexpr FontInfo::Type type();
 
 template<symbol_enum S>
 [[nodiscard]] inline QString toString(S symbol)
 {
     const auto ch = QChar::fromUcs4(unicode(symbol));
     return QString::fromUtf16(ch.begin(), ch.size());
+}
+
+template<symbol_enum S>
+[[nodiscard]] constexpr char32_t unicode(S symbol) noexcept
+{
+    return std::to_underlying<S>(symbol);
 }
 
 // utility functions // ================================================================================================
@@ -430,18 +388,6 @@ template<symbol_enum S>
 template<symbol_enum S>
 [[nodiscard]] inline QAction *createAction(QStringView iconName, QObject *parent)
 { return createAction(font<S>(), iconName, parent); }
-
-// equality operators ==================================================================================================
-
-[[nodiscard]] inline bool operator==(const FontInfo &lhs, const FontInfo &rhs) noexcept
-{
-    if (lhs.d == rhs.d)
-        return true;
-    if (lhs.d && rhs.d)
-        return lhs.d->enumType == rhs.d->enumType;
-
-    return false;
-}
 
 // constructing operators ==============================================================================================
 
@@ -469,6 +415,62 @@ ICONFONTS_EXPORT QDebug operator<<(QDebug debug, const FontInfo &info);
 ICONFONTS_EXPORT QDebug operator<<(QDebug debug, const Symbol &symbol);
 ICONFONTS_EXPORT QDebug operator<<(QDebug debug, const FontIcon &icon);
 ICONFONTS_EXPORT QDebug operator<<(QDebug debug, const ModalFontIcon &icon);
+
+// FontInfo implementations // =========================================================================================
+
+namespace Private {
+template<symbol_enum S> [[nodiscard]] ICONFONTS_EXPORT bool loadResources();
+} // namespace Private
+
+template<symbol_enum S>
+constexpr FontInfo::Data::Data(S)
+    : type{IconFonts::type<S>()}
+    , enumType{QMetaType::fromType<S>()}
+    , fontId{&IconFonts::fontId<S>}
+    , fontName{&IconFonts::fontName<S>}
+    , fontFamily{&IconFonts::fontFamily<S>}
+    , licenseFileName{&IconFonts::licenseFileName<S>}
+    , licenseText{&IconFonts::licenseText<S>}
+    , font{&IconFonts::font<S>}
+{}
+
+template<symbol_enum S>
+inline const FontInfo::Data *FontInfo::Data::instance()
+{
+    thread_local static constexpr auto s_instance = Data{S{}};
+    return &s_instance;
+}
+
+template<symbol_enum S>
+inline const FontInfo &FontInfo::instance() noexcept
+{
+    static const auto s_instance = FontInfo{S{}};
+    return s_instance;
+}
+
+inline Symbol FontInfo::symbol(int index) const
+{
+    return {*this, unicode(index)};
+}
+
+inline bool operator==(const FontInfo &lhs, const FontInfo &rhs) noexcept
+{
+    if (lhs.d == rhs.d)
+        return true;
+    if (lhs.d && rhs.d)
+        return lhs.d->enumType == rhs.d->enumType;
+
+    return false;
+}
+
+// FontIcon implementations // =========================================================================================
+
+bool FontIcon::isNull() const
+{
+    return m_symbol.isNull()
+            && !m_color.isValid()
+            && std::holds_alternative<std::monostate>(m_transform);
+}
 
 } // IconFonts
 

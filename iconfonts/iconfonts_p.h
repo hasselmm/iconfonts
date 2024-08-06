@@ -54,13 +54,6 @@ QString licenseText()
     return {};
 }
 
-template<symbol_enum S>
-const FontInfo &FontInfo::instance() noexcept
-{
-    static const auto s_instance = FontInfo{S{}};
-    return s_instance;
-}
-
 } // namespace IconFonts
 
 #endif // ICONFONTS_ICONFONTS_P_H
