@@ -365,6 +365,12 @@ template<symbol_enum S> [[nodiscard]] ICONFONTS_EXPORT QString licenseText();
 template<symbol_enum S> [[nodiscard]] constexpr FontInfo::Type type();
 
 template<symbol_enum S>
+[[nodiscard]] inline const FontInfo &fontInfo()
+{
+    return FontInfo::instance<S>();
+}
+
+template<symbol_enum S>
 [[nodiscard]] inline QString toString(S symbol)
 {
     const auto ch = QChar::fromUcs4(unicode(symbol));
@@ -375,6 +381,12 @@ template<symbol_enum S>
 [[nodiscard]] constexpr char32_t unicode(S symbol) noexcept
 {
     return std::to_underlying<S>(symbol);
+}
+
+template<symbol_enum S>
+[[nodiscard]] constexpr Symbol symbol(S symbol) noexcept
+{
+    return {fontInfo<S>(), unicode(symbol)};
 }
 
 // utility functions // ================================================================================================
