@@ -13,12 +13,12 @@ namespace Private {
 [[nodiscard]] QString readText(const QString &filePath);
 } // namespace Private
 
-template<symbol_enum T>
+template<symbol_enum S>
 FontId fontId()
 {
     static const auto s_fontId = [] {
-        if (Private::loadResources<T>())
-            return Private::loadApplicationFont(QMetaType::fromType<T>(), fontFileName<T>());
+        if (Private::loadResources<S>())
+            return Private::loadApplicationFont(QMetaType::fromType<S>(), fontFileName<S>());
 
         return FontId{};
     }();
@@ -26,17 +26,17 @@ FontId fontId()
     return s_fontId;
 }
 
-template<symbol_enum T>
+template<symbol_enum S>
 QFont font()
 {
     static const auto s_font = [] {
-        switch (type<T>()) {
+        switch (type<S>()) {
         case FontInfo::Type::Invalid:
             return QFont{};
         case FontInfo::Type::Application:
-            return Private::loadApplicationFont(fontId<T>());
+            return Private::loadApplicationFont(fontId<S>());
         case FontInfo::Type::System:
-            return QFont{fontFamily<T>()};
+            return QFont{fontFamily<S>()};
         }
 
         Q_UNREACHABLE_RETURN(QFont{});
@@ -45,19 +45,19 @@ QFont font()
     return s_font;
 }
 
-template<symbol_enum T>
+template<symbol_enum S>
 QString licenseText()
 {
-    if (Private::loadResources<T>())
-        return Private::readText(licenseFileName<T>());
+    if (Private::loadResources<S>())
+        return Private::readText(licenseFileName<S>());
 
     return {};
 }
 
-template<symbol_enum T>
+template<symbol_enum S>
 const FontInfo &FontInfo::instance() noexcept
 {
-    static const auto s_instance = FontInfo{T{}};
+    static const auto s_instance = FontInfo{S{}};
     return s_instance;
 }
 
