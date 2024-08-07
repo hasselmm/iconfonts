@@ -29,6 +29,7 @@ function(iconfonts_add_font)
         RESOURCE_PREFIX)        # prefix of the Qt resources; if not specified no resources are generated
 
     set(optional_values
+        QUICK_TARGET            # the target to which to add QtQuick specific sources
         ARCHIVE                 # path or URL of an archive to download, instead of directly accessing the web
         ARCHIVE_FILEHASH        # SHA1 hash for `ARCHIVE`
         FONT_VARIANT            # the font variant within the font's family
@@ -203,6 +204,7 @@ function(iconfonts_add_font)
 
     __iconfonts_generate_source_code( # ----------------------------------------------------------- generate source code
         TARGET              "${ICONFONTS_TARGET}"
+        QUICK_TARGET        "${ICONFONTS_QUICK_TARGET}"
         FONT_FAMILY         "${ICONFONTS_FONT_FAMILY}"
         FONT_VARIANT        "${ICONFONTS_FONT_VARIANT}"
         FONT_FILEPATH       "${opentype_filepath}"
@@ -247,6 +249,7 @@ function(iconfonts_add_font_family)
         LICENSE_FILEHASH)       # SHA1 hash for `LICENSE_FILEPATH`
 
     set(optional_values
+        QUICK_TARGET            # the target to which to add QtQuick specific sources
         ARCHIVE                 # path or URL of an archive to download, instead of directly accessing the web
         ARCHIVE_FILEHASH        # SHA1 hash for `ARCHIVE`
         INFO_FILETYPE           # file format of `INFO_FILEPATH`
@@ -307,6 +310,7 @@ function(iconfonts_add_font_family)
 
         iconfonts_add_font(
             TARGET                  "${ICONFONTS_TARGET}"
+            QUICK_TARGET            "${ICONFONTS_QUICK_TARGET}"
                                     "${ICONFONTS_OPTIONAL}"
             SKIP_RESOURCES                                          # must collect resources for all variants here
 
@@ -365,6 +369,7 @@ function(iconfonts_add_system_font_family)
         LICENSE_FILEHASH)       # SHA1 hash for `LICENSE_FILEPATH`
 
     set(optional_values
+        QUICK_TARGET            # the target to which to add QtQuick specific sources
         INFO_FILETYPE           # file format of `INFO_FILEPATH`
         INFO_OPTIONS            # additional parser options for `INFO_FILEPATH`
         RESOURCE_PREFIX)        # prefix of the Qt resources; if not specified no resources are generated
@@ -387,6 +392,7 @@ function(iconfonts_add_system_font_family)
     foreach(font_variant IN LISTS ICONFONTS_FONT_VARIANTS) # ------------------------------------- iterate font variants
         iconfonts_add_font(
             TARGET                  "${ICONFONTS_TARGET}"
+            QUICK_TARGET            "${ICONFONTS_QUICK_TARGET}"
                                     "${ICONFONTS_OPTIONAL}"
             SKIP_RESOURCES                                          # must collect resources for all variants here
 

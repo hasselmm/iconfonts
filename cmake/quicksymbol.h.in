@@ -1,0 +1,40 @@
+/* Generated on ${CODEGEN_TIMESTAMP} from:
+ * ${CODEGEN_INFO_FILEPATH}
+ * ${CODEGEN_LIST_FILEPATH}
+ */
+#ifndef QUICK${CODEGEN_HEADER_GUARD}
+#define QUICK${CODEGEN_HEADER_GUARD}
+
+#include "${CODEGEN_HEADER_FILENAME}"
+#include "quickiconfonts.h"
+
+namespace QuickIconFonts {
+
+class ${CODEGEN_FONT_SYMBOL} : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QFont font READ font CONSTANT FINAL)
+
+    QML_ELEMENT
+    QML_SINGLETON
+
+    using Symbol = IconFonts::Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol;
+
+    template<Symbol symbol>
+    static constexpr IconFonts::SymbolTag tagged = IconFonts::SymbolTag::make<symbol>();
+
+public:
+    using QObject::QObject;
+
+    enum class TaggedSymbol : char32_t {
+${CODEGEN_ICON_DEFINITIONS}
+    };
+
+    Q_ENUM(TaggedSymbol)
+
+    [[nodiscard]] QFont font() const { return IconFonts::font<Symbol>(); }
+};
+
+} // namespace QuickIconFonts
+
+#endif // QUICK${CODEGEN_HEADER_GUARD}

@@ -25,7 +25,7 @@ enable_testing()
 find_package(PythonModules REQUIRED COMPONENTS fontTools fontTools.ttx brotli)
 find_package(Qt6
     REQUIRED COMPONENTS LinguistTools Test Widgets
-    OPTIONAL_COMPONENTS QuickWidgets
+    OPTIONAL_COMPONENTS QuickTest QuickWidgets
 )
 
 qt_standard_project_setup()

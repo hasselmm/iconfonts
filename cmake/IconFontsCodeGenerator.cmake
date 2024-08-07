@@ -76,7 +76,8 @@ function(__iconfonts_generate_source_code)
         FONT_FILEPATH
         FONT_VARIANT
         INFO_FILETYPE
-        INFO_OPTIONS)
+        INFO_OPTIONS
+        QUICK_TARGET)
 
     set(single_values ${mandatory_values} ${optional_values})
     cmake_parse_arguments(ICONFONTS "" "${single_values}" "" ${ARGN}) # ----------------------- parse function arguments
@@ -108,9 +109,12 @@ function(__iconfonts_generate_source_code)
     set(source_template "${ICONFONTS_MODULE_DIR}/staticfontinfo.cpp.in")
     set(source_filepath "${ICONFONTS_GENERATED_SOURCES_DIR}/${basename}.cpp")
 
+    set(quick_template "${ICONFONTS_MODULE_DIR}/quicksymbol.h.in")
+    set(quick_filepath "${ICONFONTS_GENERATED_SOURCES_DIR}/quick${basename}.h")
+
     set_property(
         DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
-        "${header_template}" "${source_template}")
+        "${header_template}" "${source_template}" "${quick_template}")
 
     string(TOUPPER "ICONFONTS_${basename}_H" header_guard) # ---------------------------- generate file header variables
 
@@ -149,8 +153,11 @@ function(__iconfonts_generate_source_code)
 
     __iconfonts_check_recent(header_is_recent header_filepath header_template ${common_dependency_list})
     __iconfonts_check_recent(source_is_recent source_filepath source_template ${common_dependency_list})
+    __iconfonts_check_recent( quick_is_recent  quick_filepath  quick_template ${common_dependency_list})
 
-    if (header_is_recent AND source_is_recent)
+    iconfonts_show(header_is_recent source_is_recent quick_is_recent current_list_file)
+
+    if (header_is_recent AND source_is_recent AND quick_is_recent)
         message(STATUS "No code generation needed for ${font_namespace}")
     else()
         __iconfonts_collect_icons( # ----------------------------------------- collect icons and generate symbol definitions
@@ -161,7 +168,18 @@ function(__iconfonts_generate_source_code)
             OUTPUT_VARIABLE  icon_definition_list)
 
         list(JOIN icon_definition_list "" icon_definition_list)
-        string(REGEX REPLACE "\n\$" "" icon_definition_list "${icon_definition_list}")
+
+        string(
+            REGEX REPLACE "\n\$" ""
+            icon_definition_list "${icon_definition_list}")
+
+        string(
+            REGEX REPLACE
+            "(([^=\t ]+)[\t ]*) = [^,]+,"
+            "    \\1 = tagged<Symbol::\\2>,"
+            quick_icon_definition_list "${icon_definition_list}")
+
+        iconfonts_assert(NOT icon_definition_list STREQUAL quick_icon_definition_list)
     endif()
 
     set(mandatory_variables # ----------------------------------------------------- define variables for code generation
@@ -171,7 +189,6 @@ function(__iconfonts_generate_source_code)
         INFO_FILEPATH)          # filepath of the icon definitions
 
     set(header_mandatory_variables ${mandatory_variables}
-        FONT_TAG                # unique tag for symbols of this font
         FONT_TYPE               # the font type (Application, System...)
         HEADER_GUARD            # full header guard
         ICON_DEFINITIONS)       # List of icon definitions in C++
@@ -183,6 +200,13 @@ function(__iconfonts_generate_source_code)
         HEADER_FILENAME         # filename of the header to include
         LICENSE_FILEPATH        # filepath of the license text
         RESOURCE_SYMBOL)        # C++ symbol name of the Qt resource
+
+    set(quick_mandatory_variables ${header_mandatory_variables}
+        HEADER_FILENAME)        # filename of the header to include
+
+    list(
+        APPEND header_mandatory_variables
+        FONT_TAG)               # unique tag for symbols of this font
 
     set(optional_variables
         FONT_VARIANT_SYMBOL)    # C++ symbol for the font variant
@@ -225,6 +249,24 @@ function(__iconfonts_generate_source_code)
             OPTIONAL_VARIABLES       optional_variables)
     endif()
 
+    if (NOT quick_is_recent AND ICONFONTS_QUICK_TARGET) # -------------------------- generate tagged symbols for QtQuick
+        __iconfonts_generate_from_template(
+            "${quick_template}" "${quick_filepath}"
+
+            HEADER_FILENAME         "${basename}.h"
+            HEADER_GUARD            "QUICK${header_guard}"
+            FONT_NAMESPACE          "${font_namespace}"
+            FONT_SYMBOL             "${family_symbol}${variant_symbol}"
+            FONT_FAMILY_SYMBOL      "${family_symbol}"
+            FONT_VARIANT_SYMBOL     "${variant_symbol}"
+            FONT_TYPE               "${font_type}"
+            INFO_FILEPATH           "${pretty_info_filename}"
+            LIST_FILEPATH           "${pretty_list_filename}"
+            ICON_DEFINITIONS        "${quick_icon_definition_list}"
+            VARIABLES                quick_mandatory_variables
+            OPTIONAL_VARIABLES       optional_variables)
+    endif()
+
     math(EXPR next_font_tag "${ICONFONTS_NEXT_FONT_TAG} + 1") # ----------------------- generate and store next font tag
 
     set_property(
@@ -235,6 +277,10 @@ function(__iconfonts_generate_source_code)
         "${ICONFONTS_TARGET}" PRIVATE
         "${header_filepath}"
         "${source_filepath}")
+
+    if (ICONFONTS_QUICK_TARGET)
+        target_sources("${ICONFONTS_QUICK_TARGET}" PRIVATE "${quick_filepath}")
+    endif()
 
     set_property(
         TARGET "${ICONFONTS_TARGET}" APPEND PROPERTY
