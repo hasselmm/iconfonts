@@ -9,10 +9,10 @@ function(__iconfonts_set_target_properties TARGET)
     get_target_property(binary_dir "${TARGET}" BINARY_DIR)
     string(TOLOWER "${TARGET}" target_dirname)
 
-    get_target_property(next_symbol_tag "${TARGET}" ICONFONTS_NEXT_SYMBOL_TAG)
+    get_target_property(next_font_tag "${TARGET}" ICONFONTS_NEXT_FONT_TAG)
 
-    if (NOT next_symbol_tag)
-        set(next_symbol_tag 1)
+    if (NOT next_font_tag)
+        set(next_font_tag 1)
     endif()
 
     set_target_properties(
@@ -21,7 +21,7 @@ function(__iconfonts_set_target_properties TARGET)
         ICONFONTS_GENERATED_INCLUDE_DIR "${binary_dir}/sources"
         ICONFONTS_GENERATED_SOURCES_DIR "${binary_dir}/sources/${target_dirname}"
         ICONFONTS_RESOURCE_DIR          "${binary_dir}/resources"
-        ICONFONTS_NEXT_SYMBOL_TAG       "${next_symbol_tag}"
+        ICONFONTS_NEXT_FONT_TAG         "${next_font_tag}"
     )
 endfunction()
 
@@ -33,7 +33,7 @@ function(__iconfonts_get_target_properties TARGET PREFIX)
         message(FATAL_ERROR "Invalid target: '${TARGET}'")
     endif()
 
-    set(mandatory_properties GENERATED_INCLUDE_DIR GENERATED_SOURCES_DIR RESOURCE_DIR NEXT_SYMBOL_TAG)
+    set(mandatory_properties GENERATED_INCLUDE_DIR GENERATED_SOURCES_DIR RESOURCE_DIR NEXT_FONT_TAG)
     set(optional_properties FONT_OPTIONS FONT_NAMESPACES)
 
     foreach(name IN LISTS mandatory_properties optional_properties)

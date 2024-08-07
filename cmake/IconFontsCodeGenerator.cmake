@@ -171,6 +171,7 @@ function(__iconfonts_generate_source_code)
         INFO_FILEPATH)          # filepath of the icon definitions
 
     set(header_mandatory_variables ${mandatory_variables}
+        FONT_TAG                # unique tag for symbols of this font
         FONT_TYPE               # the font type (Application, System...)
         HEADER_GUARD            # full header guard
         ICON_DEFINITIONS)       # List of icon definitions in C++
@@ -193,6 +194,7 @@ function(__iconfonts_generate_source_code)
             HEADER_GUARD            "${header_guard}"
             FONT_NAMESPACE          "${font_namespace}"
             FONT_SYMBOL             "${family_symbol}${variant_symbol}"
+            FONT_TAG                "${ICONFONTS_NEXT_FONT_TAG}"
             FONT_FAMILY_SYMBOL      "${family_symbol}"
             FONT_VARIANT_SYMBOL     "${variant_symbol}"
             FONT_TYPE               "${font_type}"
@@ -222,6 +224,12 @@ function(__iconfonts_generate_source_code)
             VARIABLES                source_mandatory_variables
             OPTIONAL_VARIABLES       optional_variables)
     endif()
+
+    math(EXPR next_font_tag "${ICONFONTS_NEXT_FONT_TAG} + 1") # ----------------------- generate and store next font tag
+
+    set_property(
+        TARGET "${ICONFONTS_TARGET}" PROPERTY
+        ICONFONTS_NEXT_FONT_TAG "${next_font_tag}")
 
     target_sources( # ----------------------------------------------------------------------------------- report results
         "${ICONFONTS_TARGET}" PRIVATE

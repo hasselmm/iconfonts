@@ -41,10 +41,21 @@ function(iconfonts_finalize_target TARGET)
     list(TRANSFORM known_fonts_include_list APPEND ".h\"")
     list(JOIN known_fonts_include_list "\n" known_fonts_include_list)
 
-    set(known_fonts_type_list ${FINALIZE_FONT_NAMESPACES})
-    list(TRANSFORM known_fonts_type_list PREPEND "        FontInfo::instance<Symbols::")
-    list(TRANSFORM known_fonts_type_list APPEND "::Symbol>(),")
-    list(JOIN known_fonts_type_list "\n" known_fonts_type_list)
+    set(known_fonts_info_list ${FINALIZE_FONT_NAMESPACES})
+    list(TRANSFORM known_fonts_info_list PREPEND "        FontInfo::instance<Symbols::")
+    list(TRANSFORM known_fonts_info_list APPEND "::Symbol>(),")
+    list(JOIN known_fonts_info_list "\n" known_fonts_info_list)
+
+    unset(known_fonts_assertion_list)
+    set(padded_namespace_list "-" ${FINALIZE_FONT_NAMESPACES})
+
+    foreach(index RANGE 1 ${font_count})
+        list(GET padded_namespace_list ${index} namespace)
+
+        string(
+            APPEND known_fonts_assertion_list
+            "    static_assert(IconFonts::fontTag<${namespace}::Symbol>().index() == ${index})\\;\n")
+    endforeach()
 
     set(font_option_defines ${FINALIZE_FONT_OPTIONS})
     list(TRANSFORM font_option_defines PREPEND "${define} ")
@@ -69,14 +80,20 @@ function(iconfonts_finalize_target TARGET)
     target_sources("${TARGET}" PRIVATE "${config_filepath}")
 
     set(registry_filepath "${FINALIZE_GENERATED_SOURCES_DIR}/iconfontsregistry.cpp") # ----------- iconfontsregistry.cpp
-    set(registry_variables FONT_TYPE_LIST INCLUDE_LIST)
+    set(registry_variables
+        STATIC_ASSERTION_LIST
+        FONT_INFO_LIST
+        INCLUDE_LIST)
+
+    iconfonts_show(known_fonts_info_list known_fonts_assertion_list)
 
     __iconfonts_generate_from_template(
         "${ICONFONTS_MODULE_DIR}/iconfontsregistry.cpp.in" "${registry_filepath}"
 
         LIST_FILEPATH           "${pretty_list_filename}"
-        FONT_TYPE_LIST          "${known_fonts_type_list}"
+        FONT_INFO_LIST          "${known_fonts_info_list}"
         INCLUDE_LIST            "${known_fonts_include_list}"
+        STATIC_ASSERTION_LIST   "${known_fonts_assertion_list}"
         VARIABLES                registry_variables)
 
     target_sources("${TARGET}" PRIVATE "${registry_filepath}")

@@ -66,6 +66,84 @@ static_assert( is_icon_initializer_v<Symbol>);
 static_assert( is_icon_initializer_v<Private::FakeSymbol>);
 static_assert(!is_icon_initializer_v<QIcon::Mode>);
 
+// Tags // =============================================================================================================
+
+inline namespace Tags {
+
+template<typename T, T Minimum, T Maximum, std::size_t Shift = 0, T Invalid = T{}>
+class TaggedValue
+{
+public:
+    using value_type = T;
+    value_type m_value; // FIXME figure out how to make m_value private again
+
+    [[nodiscard]] static constexpr T         invalid() { return Invalid; }
+    [[nodiscard]] static constexpr T         minimum() { return Minimum; }
+    [[nodiscard]] static constexpr T         maximum() { return Maximum; }
+    [[nodiscard]] static constexpr T       valueMask() { return (1 << std::bit_width(maximum())) - 1; }
+    [[nodiscard]] static constexpr T         bitmask() { return valueMask() << shift(); }
+    [[nodiscard]] static constexpr std::size_t shift() { return Shift; }
+
+    static_assert((minimum() & valueMask()) == minimum());
+    static_assert((maximum() & valueMask()) == maximum());
+    static_assert( minimum()                <= maximum());
+
+    [[nodiscard]] constexpr bool isValid() const noexcept { return  m_value != invalid(); }
+    [[nodiscard]] constexpr T      index() const noexcept { return (m_value >> Shift) & valueMask(); }
+    [[nodiscard]] constexpr T      value() const noexcept { return  m_value; }
+    [[nodiscard]] constexpr operator   T() const noexcept { return  m_value; }
+
+    template<typename U>
+    requires(std::is_base_of_v<TaggedValue, U>)
+    static constexpr U fromValue(value_type value) noexcept { return {value}; }
+
+    template<typename U, auto min = U::minimum(), auto max = U::maximum(), auto shift = U::shift()>
+    static constexpr bool is_compatible_tag_v = std::is_base_of_v<TaggedValue<T, min, max, shift>, U>
+        && ((bitmask() & U::bitmask()) == 0);
+
+    template<typename U, U::value_type index, typename... V>
+    requires(index >= minimum() && index <= maximum()
+             && std::is_base_of_v<TaggedValue, U>
+             && (... && is_compatible_tag_v<std::remove_reference_t<V>>))
+    static constexpr U make(V &&...otherTags) noexcept
+    {
+        constexpr auto value = ((index & valueMask()) << Shift);
+        return {(value | ... | otherTags.value())};
+    }
+
+    constexpr TaggedValue() noexcept : m_value(invalid()) {}
+
+private:
+    constexpr TaggedValue(T value) noexcept : m_value{value} {}
+};
+
+struct FontTag : public TaggedValue<quint32, 1, 127, 24>
+{
+    template<quint32 index>
+    static constexpr FontTag make() noexcept
+    { return TaggedValue::make<FontTag, index>(); }
+
+    static constexpr FontTag fromValue(quint32 value) noexcept
+    { return TaggedValue::fromValue<FontTag>(value); }
+};
+
+struct SymbolTag : public TaggedValue<quint32, 1, 0xffffff>
+{
+    template<auto symbol, symbol_enum S = decltype(symbol)>
+    static constexpr SymbolTag make() noexcept;
+
+    static constexpr SymbolTag fromValue(quint32 value) noexcept
+    { return TaggedValue::fromValue<SymbolTag>(value); }
+
+    constexpr FontTag font() const noexcept
+    { return FontTag::fromValue(value()); }
+
+    constexpr char32_t unicode() const noexcept
+    { return static_cast<char32_t>(index()); }
+};
+
+} // namespace Tags
+
 // FontId struct // ====================================================================================================
 
 struct FontId
@@ -114,6 +192,7 @@ public:
     [[nodiscard]] QMetaType enumType() const { return d ? d->enumType : QMetaType{}; }
     [[nodiscard]] QFont font() const { return d && d->font ? d->font() : QFont{}; }
     [[nodiscard]] FontId fontId() const { return d && d->fontId ? d->fontId() : FontId{}; }
+    [[nodiscard]] FontTag tag() const { return d ? d->fontTag : FontTag{}; }
     [[nodiscard]] QString fontName() const { return d && d->fontName ? d->fontName() : QString{}; }
     [[nodiscard]] QString fontFamily() const { return d && d->fontFamily ? d->fontFamily() : QString{}; }
     [[nodiscard]] QString licenseFileName() const { return d && d->licenseFileName ? d->licenseFileName() : QString{}; }
@@ -131,6 +210,7 @@ public:
 
     template<symbol_enum S>
     [[nodiscard]] ICONFONTS_EXPORT static const FontInfo &instance() noexcept;
+    [[nodiscard]] static FontInfo fromTag(FontTag tag);
     [[nodiscard]] static QList<FontInfo> knownFonts();
 
     [[nodiscard]] operator QFont() const { return font(); }
@@ -144,6 +224,7 @@ private:
     {
         Type        type;
         QMetaType   enumType = {};
+        FontTag     fontTag;
         FontId   (* fontId)() = nullptr;
         QString  (* fontName)() = nullptr;
         QString  (* fontFamily)() = nullptr;
@@ -179,6 +260,11 @@ public:
     constexpr Symbol(S symbol) noexcept
         : m_font{FontInfo::instance<S>()}
         , m_unicode{std::to_underlying(symbol)}
+    {}
+
+    Symbol(SymbolTag symbol) noexcept
+        : m_font{FontInfo::fromTag(symbol.font())}
+        , m_unicode{symbol.unicode()}
     {}
 
     constexpr Symbol(const FontInfo &font, char32_t unicode) noexcept
@@ -361,12 +447,13 @@ struct ICONFONTS_EXPORT ModalFontIcon final
 
 template<symbol_enum S> [[nodiscard]] ICONFONTS_EXPORT QFont   font();
 template<symbol_enum S> [[nodiscard]] ICONFONTS_EXPORT FontId  fontId();
+template<symbol_enum S> [[nodiscard]] constexpr FontTag        fontTag() noexcept;
 template<symbol_enum S> [[nodiscard]] ICONFONTS_EXPORT QString fontName();
 template<symbol_enum S> [[nodiscard]] ICONFONTS_EXPORT QString fontFamily();
 template<symbol_enum S> [[nodiscard]] ICONFONTS_EXPORT QString fontFileName();
 template<symbol_enum S> [[nodiscard]] ICONFONTS_EXPORT QString licenseFileName();
 template<symbol_enum S> [[nodiscard]] ICONFONTS_EXPORT QString licenseText();
-template<symbol_enum S> [[nodiscard]] constexpr FontInfo::Type type();
+template<symbol_enum S> [[nodiscard]] constexpr FontInfo::Type type() noexcept;
 
 template<symbol_enum S>
 [[nodiscard]] inline const FontInfo &fontInfo()
@@ -432,6 +519,47 @@ ICONFONTS_EXPORT QDebug operator<<(QDebug debug, const Symbol &symbol);
 ICONFONTS_EXPORT QDebug operator<<(QDebug debug, const FontIcon &icon);
 ICONFONTS_EXPORT QDebug operator<<(QDebug debug, const ModalFontIcon &icon);
 
+// Tag implementations // ==============================================================================================
+
+template<auto symbol, symbol_enum S>
+constexpr Tags::SymbolTag Tags::SymbolTag::make() noexcept
+{
+    return TaggedValue::make<SymbolTag, IconFonts::unicode(symbol)>(fontTag<S>());
+}
+
+namespace Tests {
+using TestTag = TaggedValue<quint32, 3, 123, 4>;
+enum class TestSymbol { A = 'A', B, C };
+}
+
+template<> struct Concepts::is_symbol_enum<Tests::TestSymbol> : public std::true_type {};
+template<> constexpr FontTag fontTag<Tests::TestSymbol>() noexcept { return FontTag::make<123>(); }
+
+namespace Tests {
+
+static_assert(TestTag::  minimum()          ==     3);
+static_assert(TestTag::  maximum()          ==   123);
+static_assert(TestTag::valueMask()          ==   127);
+static_assert(TestTag::  bitmask()          == 0x7f0);
+static_assert(TestTag::  make<TestTag, 3>() ==  0x30);
+
+static_assert(std::is_base_of_v<TaggedValue<quint32, 1, 127, 24>, FontTag>);
+
+static_assert(FontTag::  minimum() == 1);
+static_assert(FontTag::  maximum() == 127);
+static_assert(FontTag::valueMask() == 127);
+static_assert(FontTag::  bitmask() == 0x7f'00'00'00);
+
+static_assert(FontTag::make<1>().index() == 1);
+static_assert(FontTag::make<2>().value() == 2 << 24);
+static_assert(FontTag::make<3>()         == 3 << 24);
+
+static_assert(SymbolTag::make<TestSymbol::A>().index() ==          0x41);
+static_assert(SymbolTag::make<TestSymbol::B>().value() == 0x7b'00'00'42);
+static_assert(SymbolTag::make<TestSymbol::C>()         == 0x7b'00'00'43);
+
+} // namespace Tests
+
 // FontInfo implementations // =========================================================================================
 
 namespace Private {
@@ -442,6 +570,7 @@ template<symbol_enum S>
 constexpr FontInfo::Data::Data(S)
     : type{IconFonts::type<S>()}
     , enumType{QMetaType::fromType<S>()}
+    , fontTag{IconFonts::fontTag<S>()}
     , fontId{&IconFonts::fontId<S>}
     , fontName{&IconFonts::fontName<S>}
     , fontFamily{&IconFonts::fontFamily<S>}

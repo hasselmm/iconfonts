@@ -529,6 +529,14 @@ QString FontInfo::name(int index) const
     return {};
 }
 
+FontInfo FontInfo::fromTag(FontTag tag)
+{
+    const auto &fontList = knownFonts();
+    const auto &font = fontList.value(tag.index() - 1);
+    Q_ASSERT(font.tag().index() == tag.index()); // FIXME: figure out how to implement proper equality operator
+    return font;
+}
+
 QMetaEnum FontInfo::metaEnum() const
 {
     if (d && d->enumType.isValid()) {

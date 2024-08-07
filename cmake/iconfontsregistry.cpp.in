@@ -10,8 +10,9 @@ namespace IconFonts {
 
 QList<FontInfo> FontInfo::knownFonts()
 {
+${CODEGEN_STATIC_ASSERTION_LIST}
     static const auto s_knownFonts = QList<FontInfo> {
-${CODEGEN_FONT_TYPE_LIST}
+${CODEGEN_FONT_INFO_LIST}
     };
 
     return s_knownFonts;

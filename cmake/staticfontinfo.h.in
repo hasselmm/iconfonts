@@ -26,7 +26,8 @@ using ${CODEGEN_FONT_SYMBOL} = Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol;
 
 namespace IconFonts {
 template<> struct is_symbol_enum<Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol> : public std::true_type {};
-template<> inline constexpr FontInfo::Type type<Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol>() { return FontInfo::Type::${CODEGEN_FONT_TYPE}; }
+template<> inline constexpr FontTag fontTag<Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol>() noexcept { return FontTag::make<${CODEGEN_FONT_TAG}>(); }
+template<> inline constexpr FontInfo::Type type<Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol>() noexcept { return FontInfo::Type::${CODEGEN_FONT_TYPE}; }
 } // IconFonts
 
 #endif // ${CODEGEN_HEADER_GUARD}
