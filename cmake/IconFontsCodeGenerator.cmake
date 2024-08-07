@@ -32,29 +32,29 @@ endfunction()
 # Generates `TARGET_FILEPATH` from `SOURCE_FILEPATH` while only allowing the variables listed in `VARIABLES`.
 # ----------------------------------------------------------------------------------------------------------------------
 function(__iconfonts_generate_from_template SOURCE_FILEPATH TARGET_FILEPATH)
-    set(variables
+    set(codegen_variables
         LIST_FILEPATH)      # filepath of the CMake lists file
 
     cmake_parse_arguments(PREPARSE "" "VARIABLES;OPTIONAL_VARIABLES" "" ${ARGN}) # --------------- inject more variables
 
-    set(mandatory_variables ${variables})
-    set(optional_variables)
+    set(codegen_mandatory_variables ${codegen_variables})
+    set(codegen_optional_variables)
 
     if (PREPARSE_VARIABLES)
-        list(APPEND mandatory_variables ${${PREPARSE_VARIABLES}})
+        list(APPEND codegen_mandatory_variables ${${PREPARSE_VARIABLES}})
     endif()
 
     if (PREPARSE_OPTIONAL_VARIABLES)
-        list(APPEND optional_variables ${${PREPARSE_OPTIONAL_VARIABLES}})
+        list(APPEND codegen_optional_variables ${${PREPARSE_OPTIONAL_VARIABLES}})
     endif()
 
-    set(variables ${mandatory_variables} ${optional_variables}) # ----------------------------- parse function arguments
-    cmake_parse_arguments(CODEGEN "" "${variables}" "" ${PREPARSE_UNPARSED_ARGUMENTS})
-    iconfonts_require_mandatory_arguments(CODEGEN ${mandatory_variables})
+    set(codegen_variables ${codegen_mandatory_variables} ${codegen_optional_variables}) # ----- parse function arguments
+    cmake_parse_arguments(CODEGEN "" "${codegen_variables}" "" ${PREPARSE_UNPARSED_ARGUMENTS})
+    iconfonts_require_mandatory_arguments(CODEGEN ${codegen_mandatory_variables})
     iconfonts_reject_unparsed_arguments(CODEGEN)
 
-    list(APPEND variables ${optional_variables} TIMESTAMP) # ------------------------------------ validate template file
-    __iconfonts_validate_code_template(CODEGEN "${SOURCE_FILEPATH}" ${variables})
+    list(APPEND codegen_variables ${codegen_optional_variables} TIMESTAMP) # -------------------- validate template file
+    __iconfonts_validate_code_template(CODEGEN "${SOURCE_FILEPATH}" ${codegen_variables})
 
     message(VERBOSE "Generating ${TARGET_FILEPATH}") # -------------------------------------------- generate source code
     string(TIMESTAMP CODEGEN_TIMESTAMP)
