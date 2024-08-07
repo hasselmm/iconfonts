@@ -24,7 +24,7 @@ class Symbol;
 // concepts // =========================================================================================================
 
 template<typename T> struct is_symbol_enum : public std::false_type {};
-template<typename T> constexpr bool is_symbol_enum_v = is_symbol_enum<T>::value;
+template<typename T> constexpr bool is_symbol_enum_v = std::is_enum_v<T> && is_symbol_enum<T>::value;
 template<typename T> concept symbol_enum = std::is_enum_v<T> && is_symbol_enum_v<T>;
 
 template<typename T> struct is_symbol : public std::disjunction<is_symbol_enum<T>, std::is_same<Symbol, T>> {};
