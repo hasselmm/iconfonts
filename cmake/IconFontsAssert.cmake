@@ -20,7 +20,7 @@ function(iconfonts_assert CONDITION)
         string(APPEND description ", actual value: '${actual_value}'")
     endif()
 
-    if (NOT ${CONDITION} ${ARGN})
+    if (NOT (${CONDITION} ${ARGN}))
         message(FATAL_ERROR "Assertion failed: ${description}")
     elseif (ICONFONTS_ASSERT_VERBOSE)
         message(STATUS "Assertion passed: ${description}")
