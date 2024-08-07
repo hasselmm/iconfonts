@@ -11,10 +11,10 @@ qt_add_executable(
 target_link_libraries(
     IconFontsViewer PRIVATE
     IconFonts
-    Qt6::Widgets
+    Qt::Widgets
 )
 
-if (TARGET Qt6::QuickWidgets)
+if (TARGET Qt::QuickWidgets)
     target_compile_definitions(
         IconFontsViewer PRIVATE
         ICONFONTS_ENABLE_QUICKWIDGET
@@ -22,6 +22,6 @@ if (TARGET Qt6::QuickWidgets)
 
     target_link_libraries(
         IconFontsViewer PRIVATE
-        Qt6::QuickWidgets
+        Qt::QuickWidgets
     )
 endif()
