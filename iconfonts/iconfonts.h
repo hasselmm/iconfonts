@@ -8,6 +8,7 @@
 #include <QColor>
 #include <QFont>
 #include <QIcon>
+#include <QMatrix4x4>
 #include <QMetaType>
 #include <QPalette>
 #include <QTransform>
@@ -248,10 +249,11 @@ private:
 class ICONFONTS_EXPORT Symbol final
 {
     Q_GADGET
-    Q_PROPERTY(bool    isNull  READ isNull  CONSTANT FINAL)
-    Q_PROPERTY(QFont   font    READ font    CONSTANT FINAL)
-    Q_PROPERTY(QString name    READ name    CONSTANT FINAL)
-    Q_PROPERTY(uint    unicode READ unicode CONSTANT FINAL)
+    Q_PROPERTY(bool    isNull  READ isNull   CONSTANT FINAL)
+    Q_PROPERTY(QFont   font    READ font     CONSTANT FINAL)
+    Q_PROPERTY(QString name    READ name     CONSTANT FINAL)
+    Q_PROPERTY(QString text    READ toString CONSTANT FINAL)
+    Q_PROPERTY(uint    unicode READ unicode  CONSTANT FINAL)
 
 public:
     constexpr Symbol() noexcept = default;
@@ -272,12 +274,12 @@ public:
         , m_unicode{unicode}
     {}
 
+    [[nodiscard]] inline bool         isNull() const { return m_font.isNull(); }
     [[nodiscard]] constexpr char32_t unicode() const { return m_unicode; }
-    [[nodiscard]] inline FontInfo fontInfo() const { return m_font; }
-    [[nodiscard]] inline const char *key() const { return m_font.key(m_font.indexOf(m_unicode)); }
-    [[nodiscard]] inline QString name() const { return m_font.name(m_font.indexOf(m_unicode)); }
-    [[nodiscard]] inline bool isNull() const { return m_font.isNull(); }
-    [[nodiscard]] inline QFont font() const { return m_font.font(); }
+    [[nodiscard]] inline FontInfo   fontInfo() const { return m_font; }
+    [[nodiscard]] inline const char     *key() const { return m_font.key(m_font.indexOf(m_unicode)); }
+    [[nodiscard]] inline QString        name() const { return m_font.name(m_font.indexOf(m_unicode)); }
+    [[nodiscard]] inline QFont          font() const { return m_font.font(); }
 
     [[nodiscard]] QString toString() const
     {
@@ -317,6 +319,15 @@ struct ICONFONTS_EXPORT DrawIconOptions : public named_options::options<bool, in
 class ICONFONTS_EXPORT FontIcon final
 {
     Q_GADGET
+    Q_PROPERTY(bool              isNull          READ isNull          CONSTANT FINAL)
+    Q_PROPERTY(QColor            color           READ color           CONSTANT FINAL)
+    Q_PROPERTY(QFont             font            READ font            CONSTANT FINAL)
+    Q_PROPERTY(QString           name            READ name            CONSTANT FINAL)
+    Q_PROPERTY(QString           text            READ toString        CONSTANT FINAL)
+    Q_PROPERTY(IconFonts::Symbol symbol          READ symbol          CONSTANT FINAL)
+    Q_PROPERTY(QTransform        transform       READ transform       CONSTANT FINAL)
+    Q_PROPERTY(Transform         transformType   READ transformType   CONSTANT FINAL)
+    Q_PROPERTY(QMatrix4x4        transformMatrix READ transformMatrix CONSTANT FINAL)
 
 public:
     enum class Transform {
@@ -370,21 +381,23 @@ public:
 
     // observers
 
-    [[nodiscard]] Symbol symbol() const { return m_symbol; }
-    [[nodiscard]] constexpr QColor color() const { return m_color; }
+    [[nodiscard]] inline bool          isNull() const;
+    [[nodiscard]] constexpr QColor      color() const { return m_color; }
+    [[nodiscard]] QFont                  font() const { return m_symbol.font(); }
+    [[nodiscard]] QString                name() const { return m_symbol.name(); }
+    [[nodiscard]] Symbol               symbol() const { return m_symbol; }
+    [[nodiscard]] QString            toString() const { return m_symbol.toString(); }
     [[nodiscard]] const QTransform &transform() const;
-    [[nodiscard]] Transform transformType() const;
-
-    [[nodiscard]] static const QTransform &transform(Transform transform) { return *instance(transform); }
-
-    [[nodiscard]] inline bool isNull() const;
-    [[nodiscard]] QString name() const { return m_symbol.name(); }
+    [[nodiscard]] QMatrix4x4  transformMatrix() const;
+    [[nodiscard]] Transform     transformType() const;
 
     [[nodiscard]] QIcon toIcon() const;
     [[nodiscard]] operator QIcon() const { return toIcon(); }
 
     [[nodiscard]] constexpr auto fields() const noexcept { return std::tie(m_symbol, m_color, m_transform); }
     friend constexpr bool operator==(const FontIcon &l, const FontIcon &r) noexcept { return l.fields() == r.fields(); }
+
+    [[nodiscard]] static const QTransform &transform(Transform transform) { return *instance(transform); }
 
     // operations
 
