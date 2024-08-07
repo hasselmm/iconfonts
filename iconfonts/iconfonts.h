@@ -281,6 +281,9 @@ public:
 
     [[nodiscard]] QString toString() const
     {
+        if (Q_UNLIKELY(isNull()))
+            return {};
+
         const auto ch = QChar::fromUcs4(unicode());
         return QString::fromUtf16(ch.begin(), ch.size());
     }
