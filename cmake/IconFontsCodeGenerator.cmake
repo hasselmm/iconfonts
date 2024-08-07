@@ -66,22 +66,21 @@ endfunction()
 # Generates C++ code from `ICON_DEFINITIONS`.
 # ----------------------------------------------------------------------------------------------------------------------
 function(__iconfonts_generate_source_code)
-    set(mandatory_single_values
+    set(mandatory_values
         TARGET              # FIXME doxs
         INFO_FILEPATH
         FONT_FAMILY
         LICENSE_FILEPATH)
 
-    set(optional_single_values
+    set(optional_values
         FONT_FILEPATH
         FONT_VARIANT
         INFO_FILETYPE
         INFO_OPTIONS)
 
-    set(single_values ${mandatory_single_values} ${optional_single_values})
-
-    cmake_parse_arguments(ICONFONTS "" "${single_values}" "${multiple_values}" ${ARGN}) # ----- parse function arguments
-    iconfonts_require_mandatory_arguments(ICONFONTS ${mandatory_single_values} ${multiple_values})
+    set(single_values ${mandatory_values} ${optional_values})
+    cmake_parse_arguments(ICONFONTS "" "${single_values}" "" ${ARGN}) # ----------------------- parse function arguments
+    iconfonts_require_mandatory_arguments(ICONFONTS ${mandatory_values})
     iconfonts_reject_unparsed_arguments(ICONFONTS)
 
     __iconfonts_get_target_properties("${ICONFONTS_TARGET}" ICONFONTS)
