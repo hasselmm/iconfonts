@@ -42,28 +42,28 @@ template<typename T> concept icon_initializer = is_icon_initializer_v<T>;
 } // inline namespace Concepts
 
 // a fake symbol enum for testing
-namespace Private { enum class FakeSymbol {}; }
-template<> struct is_symbol_enum<Private::FakeSymbol> : public std::true_type {};
+namespace Tests { enum class TestSymbol { A = 'A', B, C }; }
+template<> struct Concepts::is_symbol_enum<Tests::TestSymbol> : public std::true_type {};
 
 // validate the concepts defined above
 static_assert(!is_symbol_enum_v<FontIcon>);
 static_assert(!is_symbol_enum_v<Symbol>);
-static_assert( is_symbol_enum_v<Private::FakeSymbol>);
+static_assert( is_symbol_enum_v<Tests::TestSymbol>);
 static_assert(!is_symbol_enum_v<QIcon::Mode>);
 
 static_assert(!is_symbol_v<FontIcon>);
 static_assert( is_symbol_v<Symbol>);
-static_assert( is_symbol_v<Private::FakeSymbol>);
+static_assert( is_symbol_v<Tests::TestSymbol>);
 static_assert(!is_symbol_v<QIcon::Mode>);
 
 static_assert( is_icon_v<FontIcon>);
 static_assert(!is_icon_v<Symbol>);
-static_assert(!is_icon_v<Private::FakeSymbol>);
+static_assert(!is_icon_v<Tests::TestSymbol>);
 static_assert(!is_icon_v<QIcon::Mode>);
 
 static_assert( is_icon_initializer_v<FontIcon>);
 static_assert( is_icon_initializer_v<Symbol>);
-static_assert( is_icon_initializer_v<Private::FakeSymbol>);
+static_assert( is_icon_initializer_v<Tests::TestSymbol>);
 static_assert(!is_icon_initializer_v<QIcon::Mode>);
 
 // Tags // =============================================================================================================
@@ -527,12 +527,7 @@ constexpr Tags::SymbolTag Tags::SymbolTag::make() noexcept
     return TaggedValue::make<SymbolTag, IconFonts::unicode(symbol)>(fontTag<S>());
 }
 
-namespace Tests {
-using TestTag = TaggedValue<quint32, 3, 123, 4>;
-enum class TestSymbol { A = 'A', B, C };
-}
-
-template<> struct Concepts::is_symbol_enum<Tests::TestSymbol> : public std::true_type {};
+namespace Tests { using TestTag = TaggedValue<quint32, 3, 123, 4>; }
 template<> constexpr FontTag fontTag<Tests::TestSymbol>() noexcept { return FontTag::make<123>(); }
 
 namespace Tests {
