@@ -153,7 +153,7 @@ function(__iconfonts_generate_source_code)
     if (header_is_recent AND source_is_recent)
         message(STATUS "No code generation needed for ${font_namespace}")
     else()
-        __iconfonts_collect_icons(
+        __iconfonts_collect_icons( # ----------------------------------------- collect icons and generate symbol definitions
             FONT_VARIANT    "${ICONFONTS_FONT_VARIANT}"
             FILEPATH        "${ICONFONTS_INFO_FILEPATH}"
             FILETYPE        "${ICONFONTS_INFO_FILETYPE}"
@@ -162,18 +162,31 @@ function(__iconfonts_generate_source_code)
 
         list(JOIN icon_definition_list "" icon_definition_list)
         string(REGEX REPLACE "\n\$" "" icon_definition_list "${icon_definition_list}")
+    endif()
 
-        set(mandatory_header_variables # ----------------------------------------------- generate static fontinfo header
-            FONT_NAMESPACE          # C++ namespace of the genereated font
-            FONT_FAMILY_SYMBOL      # C++ symbol for the font family
-            FONT_TYPE               # the font type (Application, System...)
-            HEADER_GUARD            # full header guard
-            INFO_FILEPATH           # filepath of the icon definitions
-            ICON_DEFINITIONS)       # List of icon definitions in C++
+    set(mandatory_variables # ----------------------------------------------------- define variables for code generation
+        FONT_NAMESPACE          # C++ namespace of the genereated font
+        FONT_FAMILY_SYMBOL      # C++ symbol for the font family
+        FONT_SYMBOL             # C++ symbol for the font containing family and variant
+        INFO_FILEPATH)          # filepath of the icon definitions
 
-        set(optional_header_variables
-            FONT_VARIANT_SYMBOL)    # C++ symbol for the font variant
+    set(header_mandatory_variables ${mandatory_variables}
+        FONT_TYPE               # the font type (Application, System...)
+        HEADER_GUARD            # full header guard
+        ICON_DEFINITIONS)       # List of icon definitions in C++
 
+    set(source_mandatory_variables ${mandatory_variables}
+        FONT_NAME               # Font name for displaying to the user
+        FONT_FAMILY_EXPRESSION  # C++ expression for querying the font family
+        FONT_FILENAME_LITERAL   # C++ literal with the font filename without path
+        HEADER_FILENAME         # filename of the header to include
+        LICENSE_FILEPATH        # filepath of the license text
+        RESOURCE_SYMBOL)        # C++ symbol name of the Qt resource
+
+    set(optional_variables
+        FONT_VARIANT_SYMBOL)    # C++ symbol for the font variant
+
+    if (NOT header_is_recent) # -------------------------------------------------------- generate static fontinfo header
         __iconfonts_generate_from_template(
             "${header_template}" "${header_filepath}"
 
@@ -185,24 +198,11 @@ function(__iconfonts_generate_source_code)
             INFO_FILEPATH           "${pretty_info_filename}"
             LIST_FILEPATH           "${pretty_list_filename}"
             ICON_DEFINITIONS        "${icon_definition_list}"
-            OPTIONAL_VARIABLES       optional_header_variables
-            VARIABLES                mandatory_header_variables)
+            VARIABLES                header_mandatory_variables
+            OPTIONAL_VARIABLES       optional_variables)
+    endif()
 
-        set(mandatory_source_variables # ----------------------------------------------- generate static fontinfo source
-            FONT_NAME               # Font name for displaying to the user
-            FONT_NAMESPACE          # C++ namespace of the genereated font
-            FONT_FAMILY_EXPRESSION  # C++ expression for querying the font family
-            FONT_FAMILY_SYMBOL      # C++ symbol for the font family
-            FONT_FILENAME_LITERAL   # C++ literal with the font filename without path
-            HEADER_GUARD            # full header guard
-            HEADER                  # filename of the header to include
-            INFO_FILEPATH           # filepath of the icon definitions
-            LICENSE_FILEPATH        # filepath of the license text
-            RESOURCE_SYMBOL)        # C++ symbol name of the Qt resource
-
-        set(optional_header_variables
-            FONT_VARIANT_SYMBOL)    # C++ symbol for the font variant
-
+    if (NOT source_is_recent) # -------------------------------------------------------- generate static fontinfo source
         __iconfonts_generate_from_template(
             "${source_template}" "${source_filepath}"
 
@@ -211,15 +211,14 @@ function(__iconfonts_generate_source_code)
             FONT_FAMILY_SYMBOL      "${family_symbol}"
             FONT_VARIANT_SYMBOL     "${variant_symbol}"
             FONT_FILENAME_LITERAL   "${font_filename_literal}"
-            HEADER_GUARD            "${header_guard}"
-            HEADER                  "${basename}.h"
+            HEADER_FILENAME         "${basename}.h"
             FONT_NAME               "${font_name}"
             INFO_FILEPATH           "${pretty_info_filename}"
             LIST_FILEPATH           "${pretty_list_filename}"
             LICENSE_FILEPATH        "${ICONFONTS_RESOURCE_PREFIX}/${license_filename}"
             RESOURCE_SYMBOL         "${family_symbol}"
-            OPTIONAL_VARIABLES       optional_header_variables
-            VARIABLES                mandatory_source_variables)
+            VARIABLES                source_mandatory_variables
+            OPTIONAL_VARIABLES       optional_variables)
     endif()
 
     target_sources( # ----------------------------------------------------------------------------------- report results

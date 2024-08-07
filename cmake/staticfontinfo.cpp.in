@@ -2,7 +2,7 @@
  * ${CODEGEN_INFO_FILEPATH}
  * ${CODEGEN_LIST_FILEPATH}
  */
-#include "${CODEGEN_HEADER}"
+#include "${CODEGEN_HEADER_FILENAME}"
 #include "iconfonts_p.h"
 
 [[nodiscard]] static bool initIconFonts${CODEGEN_FONT_FAMILY_SYMBOL}${CODEGEN_FONT_VARIANT_SYMBOL}Resource()
