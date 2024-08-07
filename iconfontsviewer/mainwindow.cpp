@@ -460,9 +460,16 @@ void MainWindow::setupPreviewSelector(QGridLayout *layout,PreviewColumn column)
 
         Q_ASSERT(previewWidget != nullptr);
 
-        if (const auto item = layout->itemAtPosition(Preview, column))
-            if (const auto widget = item->widget())
+        for (auto count = layout->count(), i = 0; i < count; ++i) {
+            auto itemRow = -1, itemColumn = -1, dummy = -1;
+            layout->getItemPosition(i, &itemRow, &itemColumn, &dummy, &dummy);
+
+            if (itemRow != Preview || itemColumn != column)
+                continue;
+
+            if (const auto widget = layout->itemAt(i)->widget())
                 widget->hide();
+        }
 
         if (const auto index = layout->indexOf(previewWidget)) {
             if (const auto item = layout->takeAt(index)) {
