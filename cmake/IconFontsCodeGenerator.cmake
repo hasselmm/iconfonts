@@ -240,3 +240,90 @@ function(__iconfonts_generate_source_code)
         TARGET "${ICONFONTS_TARGET}" APPEND PROPERTY
         ICONFONTS_FONT_NAMESPACES "${font_namespace}")
 endfunction(__iconfonts_generate_source_code)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Finalizes `TARGET` by generating its configuration header and its font registry.
+# ----------------------------------------------------------------------------------------------------------------------
+function(iconfonts_finalize_target TARGET)
+    __iconfonts_get_target_properties("${TARGET}" FINALIZE) # ------------------------------------------- inspect target
+
+    list(LENGTH FINALIZE_FONT_NAMESPACES font_count)
+    message(STATUS "Finalizing target ${TARGET} with ${font_count} icon font(s)")
+
+    target_include_directories( # ---------------------------------------------------- update include path of the target
+        "${TARGET}" PUBLIC
+        "${FINALIZE_GENERATED_INCLUDE_DIR}"
+        "${FINALIZE_GENERATED_SOURCES_DIR}")
+
+    if (ICONFONTS_ENABLE_ALL_FONTS) # --------------------------- ensure we really list all fonts in "iconfontsconfig.h"
+        set(define "<23>define")
+    else()
+        set(define "<23>cmakedefine")
+    endif()
+
+    iconfonts_unescape(define)
+
+    set(known_fonts_include_list ${FINALIZE_FONT_NAMESPACES}) # ------------------ prepare variables for generating code
+    list(TRANSFORM known_fonts_include_list REPLACE "::" "")
+    list(TRANSFORM known_fonts_include_list TOLOWER)
+    list(TRANSFORM known_fonts_include_list PREPEND "#include \"")
+    list(TRANSFORM known_fonts_include_list APPEND ".h\"")
+    list(JOIN known_fonts_include_list "\n" known_fonts_include_list)
+
+    set(known_fonts_info_list ${FINALIZE_FONT_NAMESPACES})
+    list(TRANSFORM known_fonts_info_list PREPEND "        FontInfo::instance<Symbols::")
+    list(TRANSFORM known_fonts_info_list APPEND "::Symbol>(),")
+    list(JOIN known_fonts_info_list "\n" known_fonts_info_list)
+
+    unset(known_fonts_assertion_list)
+    set(padded_namespace_list "-" ${FINALIZE_FONT_NAMESPACES})
+
+    foreach(index RANGE 1 ${font_count})
+        list(GET padded_namespace_list ${index} namespace)
+
+        string(
+            APPEND known_fonts_assertion_list
+            "    static_assert(IconFonts::fontTag<${namespace}::Symbol>().index() == ${index})\\;\n")
+    endforeach()
+
+    set(font_option_defines ${FINALIZE_FONT_OPTIONS})
+    list(TRANSFORM font_option_defines PREPEND "${define} ")
+    list(JOIN font_option_defines "\n" font_option_defines)
+
+    cmake_path(
+        RELATIVE_PATH CMAKE_CURRENT_FUNCTION_LIST_FILE
+        BASE_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        OUTPUT_VARIABLE pretty_list_filename)
+
+    set(config_filepath  "${FINALIZE_GENERATED_SOURCES_DIR}/iconfontsconfig.h") # ----------- generate iconfontsconfig.h
+    set(config_variables FONT_OPTION_DEFINES)
+
+    __iconfonts_generate_from_template(
+        "${ICONFONTS_MODULE_DIR}/iconfontsconfig.h.in" "${config_filepath}.in"
+
+        LIST_FILEPATH           "${pretty_list_filename}"
+        FONT_OPTION_DEFINES     "${font_option_defines}"
+        VARIABLES                config_variables)
+
+    configure_file("${config_filepath}.in" "${config_filepath}")
+    target_sources("${TARGET}" PRIVATE "${config_filepath}")
+
+    set(registry_filepath "${FINALIZE_GENERATED_SOURCES_DIR}/iconfontsregistry.cpp") # ----------- iconfontsregistry.cpp
+    set(registry_variables
+        STATIC_ASSERTION_LIST
+        FONT_INFO_LIST
+        INCLUDE_LIST)
+
+    iconfonts_show(known_fonts_info_list known_fonts_assertion_list)
+
+    __iconfonts_generate_from_template(
+        "${ICONFONTS_MODULE_DIR}/iconfontsregistry.cpp.in" "${registry_filepath}"
+
+        LIST_FILEPATH           "${pretty_list_filename}"
+        FONT_INFO_LIST          "${known_fonts_info_list}"
+        INCLUDE_LIST            "${known_fonts_include_list}"
+        STATIC_ASSERTION_LIST   "${known_fonts_assertion_list}"
+        VARIABLES                registry_variables)
+
+    target_sources("${TARGET}" PRIVATE "${registry_filepath}")
+endfunction(iconfonts_finalize_target)
