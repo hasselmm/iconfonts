@@ -1,4 +1,54 @@
 # ----------------------------------------------------------------------------------------------------------------------
+# Initializes usually required properties for `TARGET`
+# ----------------------------------------------------------------------------------------------------------------------
+function(__iconfonts_set_target_properties TARGET)
+    if (NOT TARGET "${TARGET}")
+        message(FATAL_ERROR "Invalid target: '${TARGET}'")
+    endif()
+
+    get_target_property(binary_dir "${TARGET}" BINARY_DIR)
+    string(TOLOWER "${TARGET}" target_dirname)
+
+    get_target_property(next_symbol_tag "${TARGET}" ICONFONTS_NEXT_SYMBOL_TAG)
+
+    if (NOT next_symbol_tag)
+        set(next_symbol_tag 1)
+    endif()
+
+    set_target_properties(
+        "${TARGET}" PROPERTIES
+
+        ICONFONTS_GENERATED_INCLUDE_DIR "${binary_dir}/sources"
+        ICONFONTS_GENERATED_SOURCES_DIR "${binary_dir}/sources/${target_dirname}"
+        ICONFONTS_RESOURCE_DIR          "${binary_dir}/resources"
+        ICONFONTS_NEXT_SYMBOL_TAG       "${next_symbol_tag}"
+    )
+endfunction()
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Retreives usually required properties from `TARGET`
+# ----------------------------------------------------------------------------------------------------------------------
+function(__iconfonts_get_target_properties TARGET PREFIX)
+    if (NOT TARGET "${TARGET}")
+        message(FATAL_ERROR "Invalid target: '${TARGET}'")
+    endif()
+
+    set(mandatory_properties GENERATED_INCLUDE_DIR GENERATED_SOURCES_DIR RESOURCE_DIR NEXT_SYMBOL_TAG)
+    set(optional_properties FONT_OPTIONS FONT_NAMESPACES)
+
+    foreach(name IN LISTS mandatory_properties optional_properties)
+        set(property "ICONFONTS_${name}")
+        get_target_property(value "${TARGET}" "${property}")
+
+        if (NOT value AND NOT value STREQUAL "" AND name IN_LIST mandatory_properties)
+            message(FATAL_ERROR "Property ${property} is missing for target ${TARGET}")
+        endif()
+
+        set("${PREFIX}_${name}" "${value}" PARENT_SCOPE)
+    endforeach()
+endfunction()
+
+# ----------------------------------------------------------------------------------------------------------------------
 # Generates an enum member key of `NAME` with `VALUE` and an optional comment.
 # ----------------------------------------------------------------------------------------------------------------------
 function(__iconfonts_add_enumkey OUTPUT_LIST NAME VALUE)

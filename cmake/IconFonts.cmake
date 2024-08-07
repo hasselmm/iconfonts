@@ -82,49 +82,7 @@ function(iconfonts_finalize_target TARGET)
     target_sources("${TARGET}" PRIVATE "${registry_filepath}")
 endfunction(iconfonts_finalize_target)
 
-
-
-
-
-# FIXME
-
-function(__iconfonts_set_target_properties TARGET)
-    if (NOT TARGET "${TARGET}")
-        message(FATAL_ERROR "Invalid target: '${TARGET}'")
-    endif()
-
-    get_target_property(binary_dir "${TARGET}" BINARY_DIR)
-    string(TOLOWER "${TARGET}" target_dirname)
-
-    set_target_properties(
-        "${TARGET}" PROPERTIES
-
-        ICONFONTS_GENERATED_INCLUDE_DIR "${binary_dir}/sources"
-        ICONFONTS_GENERATED_SOURCES_DIR "${binary_dir}/sources/${target_dirname}"
-        ICONFONTS_RESOURCE_DIR          "${binary_dir}/resources"
-    )
-endfunction()
-
-function(__iconfonts_get_target_properties TARGET PREFIX)
-    if (NOT TARGET "${TARGET}")
-        message(FATAL_ERROR "Invalid target: '${TARGET}'")
-    endif()
-
-    set(mandatory_properties GENERATED_INCLUDE_DIR GENERATED_SOURCES_DIR RESOURCE_DIR)
-    set(optional_properties FONT_OPTIONS FONT_NAMESPACES)
-
-    foreach(name IN LISTS mandatory_properties optional_properties)
-        set(property "ICONFONTS_${name}")
-        get_target_property(value "${TARGET}" "${property}")
-
-        if (NOT value AND NOT value STREQUAL "" AND name IN_LIST mandatory_properties)
-            message(FATAL_ERROR "Property ${property} is missing for target ${TARGET}")
-        endif()
-
-        set("${PREFIX}_${name}" "${value}" PARENT_SCOPE)
-    endforeach()
-endfunction()
-
+# FIXME doxs
 function(iconfonts_add_font)
     set(options
         OPTIONAL                # the option for enabling this font is disabled by default for OPTIONAL fonts
@@ -346,6 +304,7 @@ function(iconfonts_add_font)
     endif()
 endfunction(iconfonts_add_font)
 
+# FIXME doxs
 function(iconfonts_add_font_family)
     set(options
         OPTIONAL)               # the option for enabling this font is disabled by default for OPTIONAL fonts
@@ -461,6 +420,7 @@ function(iconfonts_add_font_family)
     endif()
 endfunction(iconfonts_add_font_family)
 
+# FIXME doxs
 function(iconfonts_add_system_font_family)
     set(options
         OPTIONAL)               # the option for enabling this font is disabled by default for OPTIONAL fonts
