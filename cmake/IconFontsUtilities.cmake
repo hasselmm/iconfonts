@@ -185,7 +185,7 @@ function(__iconfonts_show_impl FUNCTION_NAME LINE_NUMBER)
         message(STATUS "${FUNCTION_NAME}(), line ${LINE_NUMBER}:")
 
         foreach(variable IN LISTS ARGN)
-            message(STATUS "> ${variable} => '${${variable}}'")
+            message(STATUS "  > ${variable} => '${${variable}}'")
         endforeach()
     elseif (variable_count GREATER 0)
         message(STATUS "${FUNCTION_NAME}(), line ${LINE_NUMBER}: ${ARGN} => '${${ARGN}}'")
