@@ -49,7 +49,7 @@ function(__iconfonts_generate_from_template SOURCE_FILEPATH TARGET_FILEPATH)
     endif()
 
     set(codegen_variables ${codegen_mandatory_variables} ${codegen_optional_variables}) # ----- parse function arguments
-    cmake_parse_arguments(CODEGEN "" "${codegen_variables}" "" ${PREPARSE_UNPARSED_ARGUMENTS})
+    cmake_parse_arguments(CODEGEN "" "" "${codegen_variables}" ${PREPARSE_UNPARSED_ARGUMENTS})
     iconfonts_require_mandatory_arguments(CODEGEN ${codegen_mandatory_variables})
     iconfonts_reject_unparsed_arguments(CODEGEN)
 
