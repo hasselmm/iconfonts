@@ -21,7 +21,9 @@ namespace IconFonts {
 class FontIcon;
 class Symbol;
 
-// concepts // =========================================================================================================
+// Concepts // =========================================================================================================
+
+inline namespace Concepts {
 
 template<typename T> struct is_symbol_enum : public std::false_type {};
 template<typename T> constexpr bool is_symbol_enum_v = std::is_enum_v<T> && is_symbol_enum<T>::value;
@@ -36,6 +38,8 @@ template<typename T> constexpr bool is_icon_v = is_icon<T>::value;
 template<typename T> struct is_icon_assignable : public std::disjunction<is_symbol<T>, is_icon<T>> {};
 template<typename T> constexpr bool is_icon_initializer_v = is_icon_assignable<T>::value;
 template<typename T> concept icon_initializer = is_icon_initializer_v<T>;
+
+} // inline namespace Concepts
 
 // a fake symbol enum for testing
 namespace Private { enum class FakeSymbol {}; }
