@@ -21,7 +21,7 @@ using enum Symbol;
 } // namespace IconFonts::inline Symbols::${CODEGEN_FONT_NAMESPACE}
 
 namespace IconFonts::inline Fonts {
-using ${CODEGEN_FONT_FAMILY_SYMBOL}${CODEGEN_FONT_VARIANT_SYMBOL} = Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol;
+using ${CODEGEN_FONT_SYMBOL} = Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol;
 } // namespace IconFonts::inline Fonts
 
 namespace IconFonts {

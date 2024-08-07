@@ -5,7 +5,7 @@
 #include "${CODEGEN_HEADER_FILENAME}"
 #include "iconfonts_p.h"
 
-[[nodiscard]] static bool initIconFonts${CODEGEN_FONT_FAMILY_SYMBOL}${CODEGEN_FONT_VARIANT_SYMBOL}Resource()
+[[nodiscard]] static bool initIconFonts${CODEGEN_FONT_SYMBOL}Resource()
 {
     static const auto s_initialized = [] {
         Q_INIT_RESOURCE(${CODEGEN_RESOURCE_SYMBOL});
@@ -32,7 +32,7 @@ template<> ICONFONTS_EXPORT QString licenseFileName<Symbols::${CODEGEN_FONT_NAME
 { return u":${CODEGEN_LICENSE_FILEPATH}"_s; }
 
 template<> ICONFONTS_EXPORT bool Private::loadResources<Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol>()
-{ return initIconFonts${CODEGEN_FONT_FAMILY_SYMBOL}${CODEGEN_FONT_VARIANT_SYMBOL}Resource(); }
+{ return initIconFonts${CODEGEN_FONT_SYMBOL}Resource(); }
 
 template const FontInfo &FontInfo::instance<Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol>() noexcept;
 

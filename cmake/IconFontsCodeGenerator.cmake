@@ -192,6 +192,7 @@ function(__iconfonts_generate_source_code)
 
             HEADER_GUARD            "${header_guard}"
             FONT_NAMESPACE          "${font_namespace}"
+            FONT_SYMBOL             "${family_symbol}${variant_symbol}"
             FONT_FAMILY_SYMBOL      "${family_symbol}"
             FONT_VARIANT_SYMBOL     "${variant_symbol}"
             FONT_TYPE               "${font_type}"
@@ -208,6 +209,7 @@ function(__iconfonts_generate_source_code)
 
             FONT_NAMESPACE          "${font_namespace}"
             FONT_FAMILY_EXPRESSION  "${font_family_expression}"
+            FONT_SYMBOL             "${family_symbol}${variant_symbol}"
             FONT_FAMILY_SYMBOL      "${family_symbol}"
             FONT_VARIANT_SYMBOL     "${variant_symbol}"
             FONT_FILENAME_LITERAL   "${font_filename_literal}"
