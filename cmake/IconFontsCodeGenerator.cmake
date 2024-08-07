@@ -144,13 +144,11 @@ function(__iconfonts_generate_source_code)
         set(license_filename "LICENSE.txt")
     endif()
 
-    __iconfonts_check_recent( # ---------------------------------------------------------------- generate code if needed
-        header_is_recent header_filepath header_template
-        ICONFONTS_INFO_FILEPATH CMAKE_CURRENT_LIST_FILE CMAKE_CURRENT_FUNCTION_LIST_FILE)
+    set(current_list_file ${CMAKE_CURRENT_FUNCTION_LIST_FILE}) # ------------------------------- generate code if needed
+    set(common_dependency_list ICONFONTS_INFO_FILEPATH CMAKE_CURRENT_LIST_FILE current_list_file)
 
-    __iconfonts_check_recent(
-        source_is_recent source_filepath source_template
-        ICONFONTS_INFO_FILEPATH CMAKE_CURRENT_LIST_FILE CMAKE_CURRENT_FUNCTION_LIST_FILE)
+    __iconfonts_check_recent(header_is_recent header_filepath header_template ${common_dependency_list})
+    __iconfonts_check_recent(source_is_recent source_filepath source_template ${common_dependency_list})
 
     if (header_is_recent AND source_is_recent)
         message(STATUS "No code generation needed for ${font_namespace}")
