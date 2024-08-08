@@ -32,6 +32,7 @@ find_package(
     OPTIONAL_COMPONENTS QuickTest QuickWidgets
 )
 
+qt_policy(SET QTP0001 NEW)
 qt_standard_project_setup()
 
 option(ICONFONTS_ENABLE_ALL_FONTS "Enable all known fonts" OFF)
