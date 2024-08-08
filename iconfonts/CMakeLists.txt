@@ -34,7 +34,6 @@ qt_add_qml_module(
     URI "IconFonts"
     QML_FILES qml/FontIcon.qml
     PLUGIN_TARGET QuickIconFontsPlugin
-    OUTPUT_DIRECTORY IconFonts
 
     SOURCES
     quickiconfonts.cpp

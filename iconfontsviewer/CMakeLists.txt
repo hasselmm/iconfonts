@@ -31,6 +31,5 @@ if (TARGET Qt::QuickWidgets)
     target_link_libraries(
         IconFontsViewer PRIVATE
         Qt::QuickWidgets
-        QuickIconFonts
     )
 endif()
