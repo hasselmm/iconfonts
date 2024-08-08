@@ -351,8 +351,15 @@ QLayout *MainWindow::createPreviewLayout()
     ignoreColorAction->setIcon(InvertColorsOff ^ InvertColors);
     ignoreColorAction->setCheckable(true);
 
+    const auto implicitModeAction = new QAction{tr("Implicit Mode"), this};
+    implicitModeAction->setIcon(FontIcon{ResetImage});
+    implicitModeAction->setCheckable(true);
+
     const auto  iconModeGroup = createActionGroup<QIcon::Mode>(this);
     const auto transformGroup = createActionGroup<FontIcon::Transform>(this);
+
+    iconModeGroup->addAction(implicitModeAction);
+    implicitModeAction->trigger();
 
     const auto toolBar = new QToolBar{this};
 
@@ -511,7 +518,12 @@ void MainWindow::onTransformActionTriggered(QAction *action)
 void MainWindow::onIconModeActionTriggered(QAction *action)
 {
     auto options = MainWindow::options();
-    options.mode = qvariant_cast<QIcon::Mode>(action->data());
+
+    if (const auto mode = action->data(); mode.canConvert<QIcon::Mode>())
+        options.mode = qvariant_cast<QIcon::Mode>(mode);
+    else
+        options.mode = {};
+
     setOptions(options);
 }
 
