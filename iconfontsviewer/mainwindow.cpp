@@ -505,15 +505,14 @@ void MainWindow::onSelectedFontChanged()
 
 void MainWindow::onTransformActionTriggered(QAction *action)
 {
-    const auto newTransform = qvariant_cast<FontIcon::Transform>(action->data());
-    m_graphicalPreview->setIcon(icon() | newTransform);
+    setIcon(icon() | qvariant_cast<FontIcon::Transform>(action->data()));
 }
 
 void MainWindow::onIconModeActionTriggered(QAction *action)
 {
-    auto options = m_graphicalPreview->options();
+    auto options = MainWindow::options();
     options.mode = qvariant_cast<QIcon::Mode>(action->data());
-    m_graphicalPreview->setOptions(options);
+    setOptions(options);
 }
 
 void MainWindow::onColorActionTriggered()
@@ -534,44 +533,45 @@ void MainWindow::onColorActionTriggered()
 
 void MainWindow::setFontSizeMode(FontSizeSpinBox::Mode newMode)
 {
-    auto options = m_graphicalPreview->options();
+    auto options = MainWindow::options();
 
     switch (newMode) {
     case FontSizeSpinBox::Mode::Fill:
         options.fillBox = true;
-        m_graphicalPreview->setOptions(options);
+        setOptions(options);
         break;
 
     case FontSizeSpinBox::Mode::Pixels:
         options.pixelSize = m_fontSize->value();
-        m_graphicalPreview->setOptions(options);
+        setOptions(options);
         break;
 
     case FontSizeSpinBox::Mode::Points:
         options.pointSize = m_fontSize->value();
-        m_graphicalPreview->setOptions(options);
+        setOptions(options);
         break;
     }
 }
 
 void MainWindow::onSetFontSize(int newFontSize)
 {
-    auto options = m_graphicalPreview->options();
+    auto options = MainWindow::options();
 
     if (options.pixelSize) {
         options.pixelSize = newFontSize;
-        m_graphicalPreview->setOptions(options);
+        setOptions(options);
     } else if (options.pointSize) {
         options.pointSize = newFontSize;
-        m_graphicalPreview->setOptions(options);
+        setOptions(options);
     }
 }
 
 void MainWindow::setIgnoreColor(bool newIgnoreColor)
 {
-    auto options = m_graphicalPreview->options();
+    auto options = MainWindow::options();
     options.applyColor = !newIgnoreColor;
-    m_graphicalPreview->setOptions(options);
+    setOptions(options);
+
     m_colorAction->setEnabled(options.applyColor);
 }
 
@@ -637,6 +637,16 @@ void MainWindow::updateTextualPreview()
 FontIcon MainWindow::icon() const
 {
     return m_graphicalPreview->icon();
+}
+
+void MainWindow::setOptions(const DrawIconOptions &options)
+{
+    m_graphicalPreview->setOptions(options);
+}
+
+DrawIconOptions MainWindow::options() const
+{
+    return m_graphicalPreview->options();
 }
 
 } // namespace IconFonts::Viewer

@@ -8,6 +8,7 @@ class QLabel;
 class QQuickWidget;
 
 namespace IconFonts {
+class DrawIconOptions;
 class FontIcon;
 }
 
@@ -34,6 +35,9 @@ public:
 
     void setIcon(const FontIcon &icon);
     [[nodiscard]] FontIcon icon() const;
+
+    void setOptions(const DrawIconOptions &options);
+    [[nodiscard]] DrawIconOptions options() const;
 
 private:
     enum PreviewColumn { Left, Right };
