@@ -410,9 +410,9 @@ public:
     // operations
 
     void draw(QPainter *painter, const QRectF &rect, const QPalette &palette,
-              const DrawIconOptions &options = {}) const;
+              const DrawIconOptions &options = {}, QIcon::Mode fallbackMode = QIcon::Normal) const;
     void draw(QPainter *painter, const QSizeF &size, const QPalette &palette,
-              const DrawIconOptions &options = {}) const;
+              const DrawIconOptions &options = {}, QIcon::Mode fallbackMode = QIcon::Normal) const;
 
 private:
     using TransformVariant = std::variant<std::monostate, Transform, std::shared_ptr<QTransform>>;
@@ -457,9 +457,11 @@ struct ICONFONTS_EXPORT ModalFontIcon final
     // operations
 
     void draw(QPainter *painter, const QRectF &rect, QIcon::State state,
-              const QPalette &palette, const DrawIconOptions &options = {}) const;
+              const QPalette &palette, const DrawIconOptions &options = {},
+              QIcon::Mode fallbackMode = QIcon::Normal) const;
     void draw(QPainter *painter, const QSizeF &size, QIcon::State state,
-              const QPalette &palette, const DrawIconOptions &options = {}) const;
+              const QPalette &palette, const DrawIconOptions &options = {},
+              QIcon::Mode fallbackMode = QIcon::Normal) const;
 };
 
 // freestanding observers // ===========================================================================================

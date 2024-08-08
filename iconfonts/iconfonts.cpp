@@ -283,7 +283,7 @@ QIcon FontIcon::toIcon() const
 }
 
 void FontIcon::draw(QPainter *painter, const QRectF &rect, const QPalette &palette,
-                    const DrawIconOptions &options) const
+                    const DrawIconOptions &options, QIcon::Mode fallbackMode) const
 {
     auto font = symbol().font();
 
@@ -296,7 +296,7 @@ void FontIcon::draw(QPainter *painter, const QRectF &rect, const QPalette &palet
 
     painter->save();
 
-    const auto effectiveColor = options.effectiveColor(m_color, palette, QIcon::Normal);
+    const auto effectiveColor = options.effectiveColor(m_color, palette, fallbackMode);
 
     if (!effectiveColor.isValid()) {
         drawImmediatly(painter, rect, font);
@@ -311,10 +311,10 @@ void FontIcon::draw(QPainter *painter, const QRectF &rect, const QPalette &palet
 }
 
 void FontIcon::draw(QPainter *painter, const QSizeF &size, const QPalette &palette,
-                    const DrawIconOptions &options) const
+                    const DrawIconOptions &options, QIcon::Mode fallbackMode) const
 {
     const auto rect = QRectF{0, 0, size.width(), size.height()};
-    return draw(painter, rect, palette, options);
+    return draw(painter, rect, palette, options, fallbackMode);
 }
 
 QColor DrawIconOptions::effectiveColor(const QColor &color, const QPalette &palette,
