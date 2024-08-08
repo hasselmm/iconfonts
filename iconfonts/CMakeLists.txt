@@ -16,8 +16,8 @@ target_compile_definitions(
 
 target_include_directories(
     IconFonts PUBLIC
-        "${ICONFONTS_SOURCE_DIR}"
-        "${ICONFONTS_SOURCE_DIR}/iconfonts" # FIXME copy all static headers into generated sources folder and then remove this hack
+    "${ICONFONTS_SOURCE_DIR}"
+    "${ICONFONTS_SOURCE_DIR}/iconfonts" # FIXME copy all static headers into generated sources folder and then remove this hack
 )
 
 target_link_libraries(
