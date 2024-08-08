@@ -282,9 +282,8 @@ QIcon FontIcon::toIcon() const
     return QIcon{new FontIconEngine{{.on = *this, .off = *this}}};
 }
 
-void FontIcon::draw(QPainter *painter,
-                    const QRectF &rect, const QPalette &palette,
-                    const DrawIconOptions &options, const std::source_location &) const
+void FontIcon::draw(QPainter *painter, const QRectF &rect, const QPalette &palette,
+                    const DrawIconOptions &options) const
 {
     auto font = symbol().font();
 
@@ -309,12 +308,11 @@ void FontIcon::draw(QPainter *painter,
     painter->restore();
 }
 
-void FontIcon::draw(QPainter *painter,
-                    const QSizeF &size, const QPalette &palette,
-                    const DrawIconOptions &options, const std::source_location &source) const
+void FontIcon::draw(QPainter *painter, const QSizeF &size, const QPalette &palette,
+                    const DrawIconOptions &options) const
 {
     const auto rect = QRectF{0, 0, size.width(), size.height()};
-    return draw(painter, rect, palette, options, source);
+    return draw(painter, rect, palette, options);
 }
 
 QColor FontIcon::effectiveColor(const QPalette &palette, QIcon::Mode mode) const
@@ -568,26 +566,24 @@ QIcon ModalFontIcon::toIcon() const
 }
 
 void ModalFontIcon::draw(QPainter *painter, const QRectF &rect, QIcon::State state,
-                         const QPalette &palette, const DrawIconOptions &options,
-                         const std::source_location &source) const
+                         const QPalette &palette, const DrawIconOptions &options) const
 {
     switch (state) {
     case QIcon::On:
-        on.draw(painter, rect, palette, options, source);
+        on.draw(painter, rect, palette, options);
         break;
 
     case QIcon::Off:
-        off.draw(painter, rect, palette, options, source);
+        off.draw(painter, rect, palette, options);
         break;
     }
 }
 
 void ModalFontIcon::draw(QPainter *painter, const QSizeF &size, QIcon::State state,
-                         const QPalette &palette, const DrawIconOptions &options,
-                         const std::source_location &source) const
+                         const QPalette &palette, const DrawIconOptions &options) const
 {
     const auto rect = QRectF{0, 0, size.width(), size.height()};
-    return draw(painter, rect, state, palette, options, source);
+    return draw(painter, rect, state, palette, options);
 }
 
 // stream operators ====================================================================================================
