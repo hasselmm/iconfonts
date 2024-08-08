@@ -39,6 +39,9 @@ public:
     void setOptions(const DrawIconOptions &options);
     [[nodiscard]] DrawIconOptions options() const;
 
+protected:
+    void changeEvent(QEvent *event) override;
+
 private:
     enum PreviewColumn { Left, Right };
     enum PreviewRow { ToolBar, Preview, Caption, Selector };
@@ -61,6 +64,10 @@ private:
     void onResetColor();
 
     void updateTextualPreview();
+
+    void setQuickPreviewProperty(const char *name, const QVariant &value);
+    void setQuickPreviewProperty(const char *name, const auto &value)
+    { setQuickPreviewProperty(name, QVariant::fromValue(value)); }
 
     FontListWidget      *const m_fontList;
     SymbolListWidget    *const m_symbolList;

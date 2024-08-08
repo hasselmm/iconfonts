@@ -32,6 +32,8 @@ target_link_libraries(
 qt_add_qml_module(
     QuickIconFonts
     URI "IconFonts"
+    QML_FILES qml/FontIcon.qml
+    PLUGIN_TARGET QuickIconFontsPlugin
     OUTPUT_DIRECTORY IconFonts
 
     SOURCES
