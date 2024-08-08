@@ -55,6 +55,39 @@ template<typename T> requires std::is_enum_v<T>
 template<typename T> requires std::is_enum_v<T>
 [[nodiscard]] QString enumKey(T);
 
+[[nodiscard]] FontIcon icon(QPalette::ColorRole role)
+{
+    switch (role) {
+    case QPalette::WindowText:      return SelectWindow;
+    case QPalette::ButtonText:      return ButtonsAlt;
+    case QPalette::Text:            return TextFields;
+    case QPalette::BrightText:      return TextIncrease;
+    case QPalette::HighlightedText: return TextSelectStart;
+    case QPalette::Link:            return Link;
+    case QPalette::ToolTipText:     return Tooltip;
+    case QPalette::PlaceholderText: return HelpCenter;
+
+    case QPalette::Button:
+    case QPalette::Light:
+    case QPalette::Midlight:
+    case QPalette::Dark:
+    case QPalette::Mid:
+    case QPalette::Base:
+    case QPalette::Window:
+    case QPalette::Shadow:
+    case QPalette::Highlight:
+    case QPalette::LinkVisited:
+    case QPalette::AlternateBase:
+    case QPalette::ToolTipBase:
+    case QPalette::NoRole:
+
+    case QPalette::NColorRoles:
+        break;
+    }
+
+    Q_UNREACHABLE_RETURN({});
+}
+
 template<>
 [[nodiscard]] FontIcon icon(FontIcon::Transform transform)
 {
@@ -150,25 +183,26 @@ struct EnumTrait
         }
     }
 
-    [[nodiscard]] static QString key(int index)
+    [[nodiscard]] static QString key(T value)
     {
         if constexpr (hasMetaEnum_v<T>) {
-            return QString::fromLatin1(QMetaEnum::fromType<T>().key(index));
+            const auto underlying = std::to_underlying(value);
+            const auto key = QMetaEnum::fromType<T>().valueToKey(underlying);
+            return QString::fromLatin1(key);
         } else {
-            return enumKey(value(index));
+            return enumKey(value);
         }
     }
 };
 
 template<typename T> requires std::is_enum_v<T>
-QActionGroup *createActionGroup(QObject *parent)
+QActionGroup *createActionGroup(const QList<T> &valueList, QObject *parent)
 {
     const auto actionGroup = new QActionGroup{parent};
     actionGroup->setExclusive(true);
 
-    for (auto count = EnumTrait<T>::keyCount(), i = 0; i < count; ++i) {
-        const auto value = EnumTrait<T>::value(i);
-        const auto action = actionGroup->addAction(icon(value), EnumTrait<T>::key(i));
+    for (const auto value : valueList) {
+        const auto action = actionGroup->addAction(icon(value), EnumTrait<T>::key(value));
         action->setData(QVariant::fromValue(value));
         action->setCheckable(true);
     }
@@ -176,6 +210,18 @@ QActionGroup *createActionGroup(QObject *parent)
     actionGroup->actions().constFirst()->setChecked(true);
 
     return actionGroup;
+}
+
+template<typename T> requires std::is_enum_v<T>
+QActionGroup *createActionGroup(QObject *parent)
+{
+    auto valueList = QList<T>{};
+    valueList.reserve(EnumTrait<T>::keyCount());
+
+    for (auto count = EnumTrait<T>::keyCount(), i = 0; i < count; ++i)
+        valueList.emplaceBack(EnumTrait<T>::value(i));
+
+    return createActionGroup(valueList, parent);
 }
 
 struct SizePolicy
@@ -355,11 +401,23 @@ QLayout *MainWindow::createPreviewLayout()
     implicitModeAction->setIcon(FontIcon{ResetImage});
     implicitModeAction->setCheckable(true);
 
+    const auto implicitRoleAction = new QAction{tr("Implicit Role"), this};
+    implicitRoleAction->setIcon(FontIcon{ResetWrench});
+    implicitRoleAction->setCheckable(true);
+
+    using enum QPalette::ColorRole;
+
     const auto  iconModeGroup = createActionGroup<QIcon::Mode>(this);
+    const auto      roleGroup = createActionGroup<QPalette::ColorRole>({WindowText, Text, BrightText, ButtonText,
+                                                                        HighlightedText, Link, ToolTipText,
+                                                                        PlaceholderText}, this);
     const auto transformGroup = createActionGroup<FontIcon::Transform>(this);
 
     iconModeGroup->addAction(implicitModeAction);
     implicitModeAction->trigger();
+
+    roleGroup->addAction(implicitRoleAction);
+    implicitRoleAction->trigger();
 
     const auto toolBar = new QToolBar{this};
 
@@ -375,6 +433,8 @@ QLayout *MainWindow::createPreviewLayout()
     toolBar->addActions(iconModeGroup->actions());
     toolBar->addSeparator();
     toolBar->addActions(transformGroup->actions());
+    toolBar->addSeparator();
+    toolBar->addActions(roleGroup->actions());
 
     const auto leftPreviewSelector = new QToolBar{this};
 
@@ -411,7 +471,8 @@ QLayout *MainWindow::createPreviewLayout()
 
     connect(iconModeGroup, &QActionGroup::triggered,
             this, &MainWindow::onIconModeActionTriggered);
-
+    connect(roleGroup, &QActionGroup::triggered,
+            this, &MainWindow::onRoleActionTriggered);
     connect(transformGroup, &QActionGroup::triggered,
             this, &MainWindow::onTransformActionTriggered);
 
@@ -523,6 +584,18 @@ void MainWindow::onIconModeActionTriggered(QAction *action)
         options.mode = qvariant_cast<QIcon::Mode>(mode);
     else
         options.mode = {};
+
+    setOptions(options);
+}
+
+void MainWindow::onRoleActionTriggered(QAction *action)
+{
+    auto options = MainWindow::options();
+
+    if (const auto role = action->data(); role.canConvert<QPalette::ColorRole>())
+        options.role = qvariant_cast<QPalette::ColorRole>(role);
+    else
+        options.role = {};
 
     setOptions(options);
 }

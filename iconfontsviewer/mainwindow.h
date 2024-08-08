@@ -52,6 +52,7 @@ private:
     void onSelectedFontChanged();
     void onTransformActionTriggered(QAction *action);
     void onIconModeActionTriggered(QAction *action);
+    void onRoleActionTriggered(QAction *action);
     void onColorActionTriggered();
 
     void setFontSizeMode(FontSizeSpinBox::Mode newMode);
