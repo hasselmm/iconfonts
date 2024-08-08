@@ -328,6 +328,7 @@ class ICONFONTS_EXPORT FontIcon final
     Q_GADGET
     Q_PROPERTY(bool              isNull          READ isNull          CONSTANT FINAL)
     Q_PROPERTY(QColor            color           READ color           CONSTANT FINAL)
+    Q_PROPERTY(bool              hasColor        READ hasColor        CONSTANT FINAL)
     Q_PROPERTY(QFont             font            READ font            CONSTANT FINAL)
     Q_PROPERTY(QString           name            READ name            CONSTANT FINAL)
     Q_PROPERTY(QString           text            READ toString        CONSTANT FINAL)
@@ -389,6 +390,7 @@ public:
 
     [[nodiscard]] inline bool          isNull() const;
     [[nodiscard]] constexpr QColor      color() const { return m_color; }
+    [[nodiscard]] bool               hasColor() const { return m_color.isValid(); }
     [[nodiscard]] QFont                  font() const { return m_symbol.font(); }
     [[nodiscard]] QString                name() const { return m_symbol.name(); }
     [[nodiscard]] Symbol               symbol() const { return m_symbol; }
