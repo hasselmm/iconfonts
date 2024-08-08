@@ -304,14 +304,24 @@ private:
 
 struct ICONFONTS_EXPORT DrawIconOptions : public named_options::options<bool, int, qreal>
 {
+    using ColorRole = QPalette::ColorRole;
+    using enum ColorRole;
+
+    using IconMode  = QIcon::Mode;
+    using enum IconMode;
+
     option<0, bool>  fillBox   = {};
     option<1, int>   pixelSize = {};
     option<2, qreal> pointSize = {};
 
-    bool applyColor                 = true;
-    std::optional<QIcon::Mode> mode = {};
+    bool               applyColor = true;
+    std::optional<IconMode>  mode = {};
+    std::optional<ColorRole> role = {};
 
     bool operator==(const DrawIconOptions &) const = default;
+
+    [[nodiscard]] QColor effectiveColor(const QColor &color, const QPalette &palette,
+                                        IconMode fallbackMode = Normal) const;
 };
 
 class ICONFONTS_EXPORT FontIcon final
@@ -414,8 +424,6 @@ private:
         , m_color{color}
     {}
 
-    [[nodiscard]] QColor effectiveColor(const QPalette &palette, QIcon::Mode mode) const;
-
     void drawImmediatly(QPainter *painter, const QRectF &rect, const QFont &font) const;
     void drawAlphaBlended(QPainter *painter, const QRectF &rect, const QFont &font, const QColor &color) const;
 
@@ -425,7 +433,6 @@ private:
     Symbol              m_symbol;
     TransformVariant    m_transform;
     QColor              m_color;
-    QPalette::ColorRole m_role = QPalette::Text;
 };
 
 // ModalFontIcon struct // =============================================================================================

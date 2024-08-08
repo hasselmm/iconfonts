@@ -296,12 +296,14 @@ void FontIcon::draw(QPainter *painter, const QRectF &rect, const QPalette &palet
 
     painter->save();
 
-    if (!m_color.isValid() || !options.applyColor) {
+    const auto effectiveColor = options.effectiveColor(m_color, palette, QIcon::Normal);
+
+    if (!effectiveColor.isValid()) {
         drawImmediatly(painter, rect, font);
     } else if (glyphFormat(font, symbol()) == QFontEngine::Format_ARGB) {
-        drawAlphaBlended(painter, rect, font, effectiveColor(palette, options.mode.value_or(QIcon::Normal)));
+        drawAlphaBlended(painter, rect, font, effectiveColor);
     } else {
-        painter->setPen(effectiveColor(palette, options.mode.value_or(QIcon::Normal)));
+        painter->setPen(effectiveColor);
         drawImmediatly(painter, rect, font);
     }
 
@@ -315,24 +317,31 @@ void FontIcon::draw(QPainter *painter, const QSizeF &size, const QPalette &palet
     return draw(painter, rect, palette, options);
 }
 
-QColor FontIcon::effectiveColor(const QPalette &palette, QIcon::Mode mode) const
+QColor DrawIconOptions::effectiveColor(const QColor &color, const QPalette &palette,
+                                       DrawIconOptions::IconMode fallbackMode) const
 {
-    switch (mode) {
-    case QIcon::Disabled:
-        return palette.color(QPalette::Disabled, m_role);
+    const auto effectiveMode = mode.value_or(fallbackMode);
 
-    case QIcon::Selected:
-        return palette.color(QPalette::HighlightedText);
+    if (effectiveMode == QIcon::Disabled)
+        return palette.color(QPalette::Disabled, role.value_or(QPalette::Text));
+    if (applyColor && color.isValid())
+        return color;
+
+    switch (effectiveMode) {
+    case QIcon::Disabled:
+        Q_UNREACHABLE_RETURN(QColor{});
 
     case QIcon::Normal:
+        return palette.color(QPalette::Inactive, role.value_or(QPalette::Text));
+
     case QIcon::Active:
-        break;
+        return palette.color(QPalette::Active, role.value_or(QPalette::Text));
+
+    case QIcon::Selected:
+        return palette.color(QPalette::Active, QPalette::HighlightedText);
     }
 
-    if (!m_color.isValid())
-        return palette.color(m_role);
-
-    return m_color;
+    Q_UNREACHABLE_RETURN(QColor{});
 }
 
 void FontIcon::drawImmediatly(QPainter *painter, const QRectF &rect, const QFont &font) const
@@ -566,24 +575,26 @@ QIcon ModalFontIcon::toIcon() const
 }
 
 void ModalFontIcon::draw(QPainter *painter, const QRectF &rect, QIcon::State state,
-                         const QPalette &palette, const DrawIconOptions &options) const
+                         const QPalette &palette, const DrawIconOptions &options,
+                         QIcon::Mode fallbackMode) const
 {
     switch (state) {
     case QIcon::On:
-        on.draw(painter, rect, palette, options);
+        on.draw(painter, rect, palette, options, fallbackMode);
         break;
 
     case QIcon::Off:
-        off.draw(painter, rect, palette, options);
+        off.draw(painter, rect, palette, options, fallbackMode);
         break;
     }
 }
 
 void ModalFontIcon::draw(QPainter *painter, const QSizeF &size, QIcon::State state,
-                         const QPalette &palette, const DrawIconOptions &options) const
+                         const QPalette &palette, const DrawIconOptions &options,
+                         QIcon::Mode fallbackMode) const
 {
     const auto rect = QRectF{0, 0, size.width(), size.height()};
-    return draw(painter, rect, state, palette, options);
+    return draw(painter, rect, state, palette, options, fallbackMode);
 }
 
 // stream operators ====================================================================================================

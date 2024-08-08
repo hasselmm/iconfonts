@@ -223,6 +223,103 @@ private slots:
         QCOMPARE(option2.mode.has_value(),      expectedOptional == DrawIconOptional::Mode);
     }
 
+    void testEffectiveColor_data()
+    {
+        QTest::addColumn<QColor>            ("color");
+        QTest::addColumn<QPalette>        ("palette");
+        QTest::addColumn<DrawIconOptions> ("options");
+        QTest::addColumn<QIcon::Mode>("fallbackMode");
+        QTest::addColumn<QColor>    ("expectedColor");
+
+        const auto       normalColor = QColor{QRgb{0x11}};
+        const auto       activeColor = QColor{QRgb{0x12}};
+        const auto     selectedColor = QColor{QRgb{0x13}};
+        const auto     disabledColor = QColor{QRgb{0x14}};
+        const auto   normalRoleColor = QColor{QRgb{0x21}};
+        const auto   activeRoleColor = QColor{QRgb{0x22}};
+        const auto disabledRoleColor = QColor{QRgb{0x23}};
+        const auto     explicitColor = QColor{QRgb{0x31}};
+        const auto           noColor = QColor{};
+
+        auto palette = QPalette{};
+
+        palette.setColor(QPalette::Inactive, QPalette::Text,            normalColor);
+        palette.setColor(QPalette::Active,   QPalette::Text,            activeColor);
+        palette.setColor(QPalette::Active,   QPalette::HighlightedText, selectedColor);
+        palette.setColor(QPalette::Disabled, QPalette::Text,            disabledColor);
+
+        palette.setColor(QPalette::Inactive, QPalette::Link,          normalRoleColor);
+        palette.setColor(QPalette::Active,   QPalette::Link,          activeRoleColor);
+        palette.setColor(QPalette::Disabled, QPalette::Link,        disabledRoleColor);
+
+        const auto  defaultOptions = DrawIconOptions{};
+        const auto   ignoreOptions = DrawIconOptions{.applyColor = false};
+        const auto selectedOptions = DrawIconOptions{.mode = QIcon::Selected};
+        const auto disabledOptions = DrawIconOptions{.mode = QIcon::Disabled};
+        const auto     roleOptions = DrawIconOptions{.role = QPalette::Link};
+
+        QTest::newRow("none:default:normal")     << noColor       << palette <<  defaultOptions << QIcon::Normal   <<   normalColor;
+        QTest::newRow("none:default:active")     << noColor       << palette <<  defaultOptions << QIcon::Active   <<   activeColor;
+        QTest::newRow("none:default:disabled")   << noColor       << palette <<  defaultOptions << QIcon::Disabled << disabledColor;
+        QTest::newRow("none:default:selected")   << noColor       << palette <<  defaultOptions << QIcon::Selected << selectedColor;
+
+        QTest::newRow("color:default:normal")    << explicitColor << palette <<  defaultOptions << QIcon::Normal   << explicitColor;
+        QTest::newRow("color:default:active")    << explicitColor << palette <<  defaultOptions << QIcon::Active   << explicitColor;
+        QTest::newRow("color:default:disabled")  << explicitColor << palette <<  defaultOptions << QIcon::Disabled << disabledColor;
+        QTest::newRow("color:default:selected")  << explicitColor << palette <<  defaultOptions << QIcon::Selected << explicitColor;
+
+        QTest::newRow("none:ignore:normal")      << noColor       << palette <<   ignoreOptions << QIcon::Normal   <<   normalColor;
+        QTest::newRow("none:ignore:active")      << noColor       << palette <<   ignoreOptions << QIcon::Active   <<   activeColor;
+        QTest::newRow("none:ignore:disabled")    << noColor       << palette <<   ignoreOptions << QIcon::Disabled << disabledColor;
+        QTest::newRow("none:ignore:selected")    << noColor       << palette <<   ignoreOptions << QIcon::Selected << selectedColor;
+
+        QTest::newRow("color:ignore:normal")     << explicitColor << palette <<   ignoreOptions << QIcon::Normal   <<   normalColor;
+        QTest::newRow("color:ignore:active")     << explicitColor << palette <<   ignoreOptions << QIcon::Active   <<   activeColor;
+        QTest::newRow("color:ignore:disabled")   << explicitColor << palette <<   ignoreOptions << QIcon::Disabled << disabledColor;
+        QTest::newRow("color:ignore:selected")   << explicitColor << palette <<   ignoreOptions << QIcon::Selected << selectedColor;
+
+        QTest::newRow("none:selected:normal")    << noColor       << palette << selectedOptions << QIcon::Normal   << selectedColor;
+        QTest::newRow("none:selected:active")    << noColor       << palette << selectedOptions << QIcon::Active   << selectedColor;
+        QTest::newRow("none:selected:disabled")  << noColor       << palette << selectedOptions << QIcon::Disabled << selectedColor;
+        QTest::newRow("none:selected:selected")  << noColor       << palette << selectedOptions << QIcon::Selected << selectedColor;
+
+        QTest::newRow("color:selected:normal")   << explicitColor << palette << selectedOptions << QIcon::Normal   << explicitColor;
+        QTest::newRow("color:selected:active")   << explicitColor << palette << selectedOptions << QIcon::Active   << explicitColor;
+        QTest::newRow("color:selected:disabled") << explicitColor << palette << selectedOptions << QIcon::Disabled << explicitColor;
+        QTest::newRow("color:selected:selected") << explicitColor << palette << selectedOptions << QIcon::Selected << explicitColor;
+
+        QTest::newRow("none:disabled:normal")    << noColor       << palette << disabledOptions << QIcon::Normal   << disabledColor;
+        QTest::newRow("none:disabled:active")    << noColor       << palette << disabledOptions << QIcon::Active   << disabledColor;
+        QTest::newRow("none:disabled:disabled")  << noColor       << palette << disabledOptions << QIcon::Disabled << disabledColor;
+        QTest::newRow("none:disabled:selected")  << noColor       << palette << disabledOptions << QIcon::Selected << disabledColor;
+
+        QTest::newRow("color:disabled:normal")   << explicitColor << palette << disabledOptions << QIcon::Normal   << disabledColor;
+        QTest::newRow("color:disabled:active")   << explicitColor << palette << disabledOptions << QIcon::Active   << disabledColor;
+        QTest::newRow("color:disabled:disabled") << explicitColor << palette << disabledOptions << QIcon::Disabled << disabledColor;
+        QTest::newRow("color:disabled:selected") << explicitColor << palette << disabledOptions << QIcon::Selected << disabledColor;
+
+        QTest::newRow("none:role:normal")        << noColor       << palette <<     roleOptions << QIcon::Normal   <<   normalRoleColor;
+        QTest::newRow("none:role:active")        << noColor       << palette <<     roleOptions << QIcon::Active   <<   activeRoleColor;
+        QTest::newRow("none:role:disabled")      << noColor       << palette <<     roleOptions << QIcon::Disabled << disabledRoleColor;
+        QTest::newRow("none:role:selected")      << noColor       << palette <<     roleOptions << QIcon::Selected <<     selectedColor;
+
+        QTest::newRow("color:role:normal")       << explicitColor << palette <<     roleOptions << QIcon::Normal   <<     explicitColor;
+        QTest::newRow("color:role:active")       << explicitColor << palette <<     roleOptions << QIcon::Active   <<     explicitColor;
+        QTest::newRow("color:role:disabled")     << explicitColor << palette <<     roleOptions << QIcon::Disabled << disabledRoleColor;
+        QTest::newRow("color:role:selected")     << explicitColor << palette <<     roleOptions << QIcon::Selected <<     explicitColor;
+    }
+
+    void testEffectiveColor()
+    {
+        const QFETCH(QColor,             color);
+        const QFETCH(QPalette,         palette);
+        const QFETCH(DrawIconOptions,  options);
+        const QFETCH(QIcon::Mode, fallbackMode);
+        const QFETCH(QColor,     expectedColor);
+
+        QCOMPARE(options.effectiveColor(color, palette, fallbackMode), expectedColor);
+    }
+
     void testPreserveTransform()
     {
         auto icon = FontIcon{};
