@@ -386,7 +386,9 @@ private slots:
 
     void testKnownFontsCount()
     {
+#ifdef ICONFONTS_ENABLE_ALL_FONTS
         QCOMPARE(FontInfo::knownFonts().count(), 52);
+#endif
 
         const auto &knownFonts = FontInfo::knownFonts();
         const auto symbolCount = std::accumulate(knownFonts.cbegin(), knownFonts.cend(),
@@ -394,6 +396,7 @@ private slots:
             return count + font.symbolCount();
         });
 
+        qInfo() << "font count:" << knownFonts.count();
         qInfo() << "symbol count:" << symbolCount;
     }
 };
