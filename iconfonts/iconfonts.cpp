@@ -195,6 +195,25 @@ template<FontIcon::Transform Transform>
     return type.flags().testFlag(QMetaType::IsEnumeration);
 }
 
+[[nodiscard]] auto makeColorResolver(const QPalette &palette)
+{
+    return [palette](QIcon::Mode mode, QPalette::ColorRole role)
+    {
+        switch (mode) {
+        case QIcon::Mode::Disabled:
+            return palette.color(QPalette::Disabled, role);
+        case QIcon::Mode::Normal:
+            return palette.color(QPalette::Inactive, role);
+        case QIcon::Mode::Active:
+            return palette.color(QPalette::Active,   role);
+        case QIcon::Mode::Selected:
+            return palette.color(QPalette::Active,   QPalette::HighlightedText);
+        }
+
+        Q_UNREACHABLE_RETURN(QColor{});
+    };
+}
+
 } // namespace
 
 FontId loadApplicationFont(const QMetaType &font, const QString &fileName)
@@ -315,28 +334,22 @@ void FontIcon::draw(QPainter *painter, const QSizeF &size, const QPalette &palet
 QColor DrawIconOptions::effectiveColor(const QColor &color, const QPalette &palette,
                                        DrawIconOptions::IconMode fallbackMode) const
 {
+    return effectiveColor(color, makeColorResolver(palette), fallbackMode);
+}
+
+QColor DrawIconOptions::effectiveColor(const QColor &color, ColorResolver resolveColor, IconMode fallbackMode) const
+{
     const auto effectiveMode = mode.value_or(fallbackMode);
 
-    if (effectiveMode == QIcon::Disabled)
-        return palette.color(QPalette::Disabled, role.value_or(QPalette::Text));
-    if (applyColor && color.isValid())
+    if (effectiveMode != Disabled
+            && applyColor
+            && color.isValid())
         return color;
 
-    switch (effectiveMode) {
-    case QIcon::Disabled:
-        Q_UNREACHABLE_RETURN(QColor{});
+    if (!resolveColor)
+        resolveColor = makeColorResolver(QPalette{}); // FIXME: access widget/item palette?
 
-    case QIcon::Normal:
-        return palette.color(QPalette::Inactive, role.value_or(QPalette::Text));
-
-    case QIcon::Active:
-        return palette.color(QPalette::Active, role.value_or(QPalette::Text));
-
-    case QIcon::Selected:
-        return palette.color(QPalette::Active, QPalette::HighlightedText);
-    }
-
-    Q_UNREACHABLE_RETURN(QColor{});
+    return resolveColor(effectiveMode, role.value_or(Text));
 }
 
 void FontIcon::drawImmediatly(QPainter *painter, const QRectF &rect, const QFont &font) const

@@ -319,8 +319,10 @@ struct ICONFONTS_EXPORT DrawIconOptions final : public named_options::options<bo
 
     bool operator==(const DrawIconOptions &) const = default;
 
-    [[nodiscard]] QColor effectiveColor(const QColor &color, const QPalette &palette,
-                                        IconMode fallbackMode = Normal) const;
+    using ColorResolver = std::function<QColor(IconMode, ColorRole)>;
+
+    [[nodiscard]] QColor effectiveColor(const QColor &color, const QPalette &palette, IconMode fallbackMode = Normal) const;
+    [[nodiscard]] QColor effectiveColor(const QColor &color, ColorResolver resolveColor, IconMode fallbackMode = Normal) const;
 };
 
 class ICONFONTS_EXPORT FontIcon final
