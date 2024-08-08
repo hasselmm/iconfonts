@@ -20,6 +20,7 @@ Item {
 
         anchors.centerIn: parent
 
+        renderType: Text.NativeRendering
         renderTypeQuality: Text.VeryHighRenderTypeQuality
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
