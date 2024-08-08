@@ -155,8 +155,6 @@ function(__iconfonts_generate_source_code)
     __iconfonts_check_recent(source_is_recent source_filepath source_template ${common_dependency_list})
     __iconfonts_check_recent( quick_is_recent  quick_filepath  quick_template ${common_dependency_list})
 
-    iconfonts_show(header_is_recent source_is_recent quick_is_recent current_list_file)
-
     if (header_is_recent AND source_is_recent AND quick_is_recent)
         message(STATUS "No code generation needed for ${font_namespace}")
     else()
@@ -359,8 +357,6 @@ function(iconfonts_finalize_target TARGET)
         STATIC_ASSERTION_LIST
         FONT_INFO_LIST
         INCLUDE_LIST)
-
-    iconfonts_show(known_fonts_info_list known_fonts_assertion_list)
 
     __iconfonts_generate_from_template(
         "${ICONFONTS_MODULE_DIR}/iconfontsregistry.cpp.in" "${registry_filepath}"
