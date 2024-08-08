@@ -79,6 +79,100 @@ private:
     IconFonts::FontIcon m_icon;
 };
 
+class QUICKICONFONTS_EXPORT IconMode : public QObject
+{
+    Q_OBJECT
+
+    QML_ELEMENT
+    QML_UNCREATABLE("This type only provides the IconMode enumeration")
+
+public:
+    enum Value {
+        Normal      = QIcon::Normal,
+        Disabled    = QIcon::Disabled,
+        Active      = QIcon::Active,
+        Selected    = QIcon::Selected,
+    };
+
+    Q_ENUM(Value)
+
+    IconMode() = delete;
+
+    static constexpr Value fromQIcon(QIcon::Mode mode)
+    {
+        switch (mode) {
+        case QIcon::Normal:
+            return IconMode::Normal;
+        case QIcon::Disabled:
+            return IconMode::Disabled;
+        case QIcon::Active:
+            return IconMode::Active;
+        case QIcon::Selected:
+            return IconMode::Selected;
+        }
+
+        Q_UNREACHABLE_RETURN(static_cast<Value>(-1));
+    }
+
+    static constexpr QIcon::Mode toQIcon(Value mode)
+    {
+        switch (mode) {
+        case IconMode::Normal:
+            return QIcon::Normal;
+        case IconMode::Disabled:
+            return QIcon::Disabled;
+        case IconMode::Active:
+            return QIcon::Active;
+        case IconMode::Selected:
+            return QIcon::Selected;
+        }
+
+        Q_UNREACHABLE_RETURN(static_cast<QIcon::Mode>(-1));
+    }
+};
+
+static_assert(IconMode::fromQIcon(QIcon::Normal)  == IconMode::Normal);
+static_assert(IconMode::toQIcon(IconMode::Normal) ==    QIcon::Normal);
+
+class QUICKICONFONTS_EXPORT DrawIconOptions
+{
+    Q_GADGET
+    Q_PROPERTY(bool                    hasPointSize READ hasPointSize CONSTANT FINAL)
+    Q_PROPERTY(qreal                      pointSize READ pointSize    CONSTANT FINAL)
+    Q_PROPERTY(bool                    hasPixelSize READ hasPixelSize CONSTANT FINAL)
+    Q_PROPERTY(int                        pixelSize READ pixelSize    CONSTANT FINAL)
+    Q_PROPERTY(bool                      applyColor READ applyColor   CONSTANT FINAL)
+    Q_PROPERTY(bool                         hasMode READ hasMode      CONSTANT FINAL)
+    Q_PROPERTY(QuickIconFonts::IconMode::Value mode READ mode         CONSTANT FINAL)
+
+    QML_VALUE_TYPE(drawIconOptions)
+
+public:
+    DrawIconOptions() = default;
+    DrawIconOptions(const IconFonts::DrawIconOptions &options) : m_options{options} {}
+
+    [[nodiscard]] bool           hasPointSize() const { return m_options.pointSize.has_value(); }
+    [[nodiscard]] qreal             pointSize() const { return m_options.pointSize.value_or(0); }
+    [[nodiscard]] bool           hasPixelSize() const { return m_options.pixelSize.has_value(); }
+    [[nodiscard]] int               pixelSize() const { return m_options.pixelSize.value_or(0); }
+    [[nodiscard]] bool             applyColor() const { return m_options.applyColor;            }
+    [[nodiscard]] bool                hasMode() const { return m_options.mode.has_value();      }
+    [[nodiscard]] inline IconMode::Value mode() const;
+
+    operator IconFonts::DrawIconOptions() const noexcept { return m_options; }
+
+    [[nodiscard]] Q_INVOKABLE QColor effectiveColor(const QQuickItem *item, const QColor &iconColor) const;
+    [[nodiscard]] Q_INVOKABLE QColor effectiveColor(const QQuickItem *item, const QColor &iconColor, bool active) const;
+
+private:
+    IconFonts::DrawIconOptions m_options;
+};
+
+inline IconMode::Value DrawIconOptions::mode() const
+{
+    return IconMode::fromQIcon(m_options.mode.value_or(QIcon::Normal));
+}
+
 } // namespace QuickIconFonts
 
 #endif // QUICKICONFONTS_H

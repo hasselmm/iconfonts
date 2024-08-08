@@ -49,7 +49,7 @@ target_compile_definitions(
 target_link_libraries(
     QuickIconFonts PUBLIC
     IconFonts
-    Qt::QmlIntegration
+    Qt::QuickPrivate
 )
 
 # Ant Design Icons # ---------------------------------------------------------------------------------------------------
