@@ -261,11 +261,6 @@ const QTransform &FontIcon::transform() const
     return *Private::instance<Transform::None>();
 }
 
-QMatrix4x4 FontIcon::transformMatrix() const
-{
-    return transform();
-}
-
 IconFonts::FontIcon::Transform FontIcon::transformType() const
 {
     const struct {

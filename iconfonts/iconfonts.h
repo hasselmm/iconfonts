@@ -8,7 +8,6 @@
 #include <QColor>
 #include <QFont>
 #include <QIcon>
-#include <QMatrix4x4>
 #include <QMetaType>
 #include <QPalette>
 #include <QTransform>
@@ -335,7 +334,6 @@ class ICONFONTS_EXPORT FontIcon final
     Q_PROPERTY(IconFonts::Symbol symbol          READ symbol          CONSTANT FINAL)
     Q_PROPERTY(QTransform        transform       READ transform       CONSTANT FINAL)
     Q_PROPERTY(Transform         transformType   READ transformType   CONSTANT FINAL)
-    Q_PROPERTY(QMatrix4x4        transformMatrix READ transformMatrix CONSTANT FINAL)
 
 public:
     enum class Transform {
@@ -396,7 +394,6 @@ public:
     [[nodiscard]] Symbol               symbol() const { return m_symbol; }
     [[nodiscard]] QString            toString() const { return m_symbol.toString(); }
     [[nodiscard]] const QTransform &transform() const;
-    [[nodiscard]] QMatrix4x4  transformMatrix() const;
     [[nodiscard]] Transform     transformType() const;
 
     [[nodiscard]] QIcon toIcon() const;
