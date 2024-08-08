@@ -213,7 +213,7 @@ QLabel *createCaption(QWidget *parent)
     return label;
 };
 
-QFont makeFont(const FontIcon &icon, const DrawIconOptions &options)
+QFont makeFont(const FontIcon &icon, const DrawIconOptions &options, const QSize &fillSize)
 {
     auto font = icon.symbol().font();
 
@@ -221,6 +221,8 @@ QFont makeFont(const FontIcon &icon, const DrawIconOptions &options)
         font.setPixelSize(options.pixelSize.value());
     else if (options.pointSize)
         font.setPointSize(options.pointSize.value());
+    else
+        font.setPixelSize(std::min(fillSize.width(), fillSize.height()));
 
     return font;
 }
@@ -594,7 +596,7 @@ void MainWindow::setIcon(const FontIcon &newIcon)
 void MainWindow::updateTextualPreview()
 {
     const auto &newIcon = icon();
-    const auto &newFont = makeFont(newIcon, m_graphicalPreview->options());
+    const auto &newFont = makeFont(newIcon, m_graphicalPreview->options(), m_textualPreview->size());
     const auto &options = m_graphicalPreview->options();
     const auto quickText = m_quickPreview->rootObject();
 
