@@ -5,7 +5,6 @@
 
 class QGridLayout;
 class QLabel;
-class QQuickWidget;
 
 namespace IconFonts {
 class DrawIconOptions;
@@ -16,6 +15,7 @@ namespace IconFonts::Viewer {
 
 class FontListWidget;
 class IconPreview;
+class QuickPreview;
 class SymbolListWidget;
 
 class MainWindow : public QWidget
@@ -33,14 +33,11 @@ public:
 
     explicit MainWindow(QWidget *parent = nullptr);
 
-    void setIcon(const FontIcon &icon);
+    void setIcon(const FontIcon &newIcon);
     [[nodiscard]] FontIcon icon() const;
 
-    void setOptions(const DrawIconOptions &options);
+    void setOptions(const DrawIconOptions &newOptions);
     [[nodiscard]] DrawIconOptions options() const;
-
-protected:
-    void changeEvent(QEvent *event) override;
 
 private:
     enum PreviewColumn { Left, Right };
@@ -65,10 +62,6 @@ private:
 
     void updateTextualPreview();
 
-    void setQuickPreviewProperty(const char *name, const QVariant &value);
-    void setQuickPreviewProperty(const char *name, const auto &value)
-    { setQuickPreviewProperty(name, QVariant::fromValue(value)); }
-
     FontListWidget      *const m_fontList;
     SymbolListWidget    *const m_symbolList;
     FontSizeSpinBox     *const m_fontSize;
@@ -76,7 +69,7 @@ private:
     QAction             *const m_resetColorAction;
     IconPreview         *const m_graphicalPreview;
     QLabel              *const m_textualPreview;
-    QQuickWidget        *const m_quickPreview;
+    QuickPreview        *const m_quickPreview;
 
     QActionGroup        *const m_leftPreviewGroup;
     QActionGroup        *const m_rightPreviewGroup;

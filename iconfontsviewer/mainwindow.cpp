@@ -3,6 +3,7 @@
 #include "fontlistwidget.h"
 #include "fontsizespinbox.h"
 #include "iconpreview.h"
+#include "quickpreview.h"
 #include "symbollistwidget.h"
 
 #include <iconfonts/iconfontsconfig.h>
@@ -20,27 +21,6 @@
 #include <QLineEdit>
 #include <QMetaEnum>
 #include <QToolBar>
-
-#ifdef ICONFONTS_ENABLE_QUICKWIDGET
-
-#include <QQmlComponent>
-#include <QQuickItem>
-#include <QQuickWidget>
-
-#else
-
-class QQuickWidget : public QLabel
-{
-public:
-    explicit QQuickWidget(QWidget *parent = nullptr)
-        : QLabel{tr("not available"), parent}
-    {
-        setAlignment(Qt::AlignCenter);
-        setEnabled(false);
-    }
-};
-
-#endif // ICONFONTS_ENABLE_QUICKWIDGET
 
 namespace IconFonts::Viewer {
 
@@ -284,7 +264,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_resetColorAction{new QAction{FontIcon{FormatColorReset}, tr("Reset Color"), this}}
     , m_graphicalPreview{new IconPreview{this}}
     , m_textualPreview{new QLabel{this}}
-    , m_quickPreview{new QQuickWidget{this}}
+    , m_quickPreview{new QuickPreview{this}}
     , m_leftPreviewGroup{createActionGroup<PreviewType>(this)}
     , m_rightPreviewGroup{createActionGroup<PreviewType>(this)}
 {
@@ -358,16 +338,7 @@ QLayout *MainWindow::createPreviewLayout()
     m_graphicalPreview->hide();
 
     m_quickPreview->setMinimumSize(300, 400);
-    m_quickPreview->setClearColor(Qt::transparent);
-    m_quickPreview->setAttribute(Qt::WA_AlwaysStackOnTop);
-    m_quickPreview->setAttribute(Qt::WA_TranslucentBackground);
     m_quickPreview->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    m_quickPreview->setResizeMode(QQuickWidget::SizeRootObjectToView);
-    m_quickPreview->hide();
-
-    auto component = QQmlComponent{m_quickPreview->engine()};
-    component.setData("import IconFonts; FontIcon {}", QUrl{});
-    m_quickPreview->setContent(component.url(), &component, component.create(m_quickPreview->rootContext()));
     m_quickPreview->hide();
 
     Viewer::setSizePolicy(m_textualPreview, {
@@ -675,8 +646,9 @@ void MainWindow::setIcon(const FontIcon &newIcon)
         m_colorAction->setIcon(FontIcon{FormatColorReset});
 
     m_resetColorAction->setEnabled(newColor.isValid());
+
     m_graphicalPreview->setIcon(newIcon);
-    setQuickPreviewProperty("icon", newIcon);
+    m_quickPreview->setIcon(newIcon);
 }
 
 void MainWindow::updateTextualPreview()
@@ -687,15 +659,15 @@ void MainWindow::updateTextualPreview()
 
     if (newIcon.symbol().isNull()) {
         m_textualPreview->setFont({});
-        m_textualPreview->setText(tr("no icon selected"));
+        m_textualPreview->setText(tr("No symbol selected."));
         m_textualPreview->setEnabled(false);
 
-        m_quickPreview->rootObject()->setEnabled(false);
+        m_quickPreview->setEnabled(false);
     } else {
         m_textualPreview->setFont(newFont);
         m_textualPreview->setText(newIcon.symbol());
         m_textualPreview->setEnabled(options.mode != QIcon::Disabled);
-        m_quickPreview->rootObject()->setEnabled(options.mode != QIcon::Disabled);
+        m_quickPreview->setEnabled(options.mode != QIcon::Disabled);
     }
 
     if (options.applyColor
@@ -709,33 +681,20 @@ void MainWindow::updateTextualPreview()
     }
 }
 
-void MainWindow::setQuickPreviewProperty(const char *name, const QVariant &value)
-{
-    m_quickPreview->rootObject()->setProperty(name, value);
-}
-
 FontIcon MainWindow::icon() const
 {
     return m_graphicalPreview->icon();
 }
 
-void MainWindow::setOptions(const DrawIconOptions &options)
+void MainWindow::setOptions(const DrawIconOptions &newOptions)
 {
-    m_graphicalPreview->setOptions(options);
-    setQuickPreviewProperty("options", options);
+    m_graphicalPreview->setOptions(newOptions);
+    m_quickPreview->setOptions(newOptions);
 }
 
 DrawIconOptions MainWindow::options() const
 {
     return m_graphicalPreview->options();
-}
-
-void MainWindow::changeEvent(QEvent *event)
-{
-    QWidget::changeEvent(event);
-
-    if (event->type() == QEvent::ActivationChange)
-        setQuickPreviewProperty("active", isActiveWindow());
 }
 
 } // namespace IconFonts::Viewer
