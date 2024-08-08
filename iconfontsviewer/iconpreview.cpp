@@ -36,9 +36,14 @@ void IconPreview::paintEvent(QPaintEvent *event)
     auto painter = QPainter{this};
     painter.setClipRegion(event->region());
 
-    using enum QIcon::Mode;
-    const auto mode = isEnabled() ? isActiveWindow() ? Active : Normal : Disabled;
-    m_icon.draw(&painter, size(), palette(), m_options, mode);
+    if (m_icon.symbol().isNull()) {
+        painter.setPen(palette().color(QPalette::Disabled, QPalette::Text));
+        painter.drawText(0, 0, width(), height(), Qt::AlignCenter, tr("No symbol selected."));
+    } else {
+        using enum QIcon::Mode;
+        const auto mode = isEnabled() ? isActiveWindow() ? Active : Normal : Disabled;
+        m_icon.draw(&painter, size(), palette(), m_options, mode);
+    }
 }
 
 } // namespace IconFonts::Viewer
