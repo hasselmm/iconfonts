@@ -310,8 +310,8 @@ struct ICONFONTS_EXPORT DrawIconOptions : public named_options::options<bool, in
     option<1, int>   pixelSize = {};
     option<2, qreal> pointSize = {};
 
-    bool applyColor      = true;
-    QIcon::Mode iconMode = QIcon::Normal;
+    bool applyColor                 = true;
+    std::optional<QIcon::Mode> mode = {};
 
     bool operator==(const DrawIconOptions &) const = default;
 };

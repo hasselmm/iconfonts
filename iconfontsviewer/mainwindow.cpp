@@ -506,7 +506,7 @@ void MainWindow::onTransformActionTriggered(QAction *action)
 void MainWindow::onIconModeActionTriggered(QAction *action)
 {
     auto options = m_graphicalPreview->options();
-    options.iconMode = qvariant_cast<QIcon::Mode>(action->data());
+    options.mode = qvariant_cast<QIcon::Mode>(action->data());
     m_graphicalPreview->setOptions(options);
 }
 
@@ -593,11 +593,11 @@ void MainWindow::updateTextualPreview()
     } else {
         m_textualPreview->setFont(newFont);
         m_textualPreview->setText(newIcon.symbol());
-        m_textualPreview->setEnabled(options.iconMode != QIcon::Disabled);
+        m_textualPreview->setEnabled(options.mode != QIcon::Disabled);
 
         quickText->setProperty("font", newFont);
         quickText->setProperty("text", newIcon.symbol().toString());
-        m_quickPreview->setEnabled(options.iconMode != QIcon::Disabled);
+        m_quickPreview->setEnabled(options.mode != QIcon::Disabled);
     }
 
     if (options.applyColor

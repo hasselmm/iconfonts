@@ -135,7 +135,7 @@ void FontIconEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mod
     painter->eraseRect(rect);
 
     // FIXME: get access to palette
-    m_icon.draw(painter, rect, state, {}, {.fillBox = true, .iconMode = mode});
+    m_icon.draw(painter, rect, state, {}, {.fillBox = true, .mode = mode});
 }
 
 QString FontIconEngine::key() const
@@ -300,9 +300,9 @@ void FontIcon::draw(QPainter *painter,
     if (!m_color.isValid() || !options.applyColor) {
         drawImmediatly(painter, rect, font);
     } else if (glyphFormat(font, symbol()) == QFontEngine::Format_ARGB) {
-        drawAlphaBlended(painter, rect, font, effectiveColor(palette, options.iconMode));
+        drawAlphaBlended(painter, rect, font, effectiveColor(palette, options.mode.value_or(QIcon::Normal)));
     } else {
-        painter->setPen(effectiveColor(palette, options.iconMode));
+        painter->setPen(effectiveColor(palette, options.mode.value_or(QIcon::Normal)));
         drawImmediatly(painter, rect, font);
     }
 

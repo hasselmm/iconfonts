@@ -171,6 +171,10 @@ private slots:
         QTest::newRow("applyColor")
                 << DrawIconOptions{.applyColor = true}
                 << DrawIconOptions{.applyColor = false};
+
+        QTest::newRow("mode")
+                << DrawIconOptions{.mode = QIcon::Normal}
+                << DrawIconOptions{.mode = QIcon::Active};
     }
 
     void testDrawIconOptions()
