@@ -11,6 +11,11 @@ iconfonts_add_test(
     LIBRARIES IconFonts Qt::Test
 )
 
+iconfonts_add_test(
+    tst_glyphsrenderable tst_glyphsrenderable.cpp
+    LIBRARIES IconFonts Qt::Test
+)
+
 if (TARGET QuickIconFonts)
     iconfonts_add_test(
         tst_quickiconfonts tst_quickiconfonts.cpp

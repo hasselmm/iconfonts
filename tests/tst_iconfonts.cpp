@@ -341,30 +341,6 @@ private slots:
                  font.licenseText().toUtf8());
     }
 
-    void testFontGlyphsRenderable_data()
-    {
-        collectFontInfoData();
-    }
-
-    void testFontGlyphsRenderable()
-    {
-        const QFETCH(FontInfo, font);
-        ignoreFontLoadingMessage(font);
-
-        const auto metrics = QFontMetrics{font};
-        auto badSymbols = QStringList{};
-
-        for (auto count = font.symbolCount(), i = 0; i < count; ++i) {
-            const auto &symbol = font.symbol(i);
-            const auto &box = metrics.boundingRect(symbol);
-
-            if (box.isEmpty())
-                badSymbols.emplaceBack(symbol.name());
-        }
-
-        QVERIFY2(badSymbols.isEmpty(), qPrintable(badSymbols.join(u", "_s)));
-    }
-
     void testSymbolProperties_data()
     {
         QTest::addColumn<Symbol>("symbol");
