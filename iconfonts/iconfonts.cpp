@@ -135,7 +135,7 @@ void FontIconEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mod
     painter->eraseRect(rect);
 
     // FIXME: get access to palette
-    m_icon.draw(painter, rect, state, {}, {.fillRect = true, .iconMode = mode});
+    m_icon.draw(painter, rect, state, {}, {.fillBox = true, .iconMode = mode});
 }
 
 QString FontIconEngine::key() const
@@ -288,7 +288,7 @@ void FontIcon::draw(QPainter *painter,
 {
     auto font = symbol().font();
 
-    if (options.fillRect.value_or(false))
+    if (options.fillBox.value_or(false))
         font.setPixelSize(std::min(rect.width(), rect.height()));
     else if (options.pixelSize)
         font.setPixelSize(*options.pixelSize);

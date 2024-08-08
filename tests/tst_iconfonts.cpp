@@ -156,9 +156,9 @@ private slots:
         QTest::addColumn<DrawIconOptions>("option1");
         QTest::addColumn<DrawIconOptions>("option2");
 
-        QTest::newRow("fillRect")
-                << DrawIconOptions{.fillRect = true}
-                << DrawIconOptions{.fillRect = false};
+        QTest::newRow("fillBox")
+                << DrawIconOptions{.fillBox = true}
+                << DrawIconOptions{.fillBox = false};
 
         QTest::newRow("pixelSize")
                 << DrawIconOptions{.pixelSize = 12}

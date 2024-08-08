@@ -306,7 +306,7 @@ private:
 
 struct ICONFONTS_EXPORT DrawIconOptions : public named_options::options<bool, int, qreal>
 {
-    option<0, bool>  fillRect  = {};
+    option<0, bool>  fillBox   = {};
     option<1, int>   pixelSize = {};
     option<2, qreal> pointSize = {};
 

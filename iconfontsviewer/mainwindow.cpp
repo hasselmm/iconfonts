@@ -532,7 +532,7 @@ void MainWindow::setFontSizeMode(FontSizeSpinBox::Mode newMode)
 
     switch (newMode) {
     case FontSizeSpinBox::Mode::Fill:
-        options.fillRect = true;
+        options.fillBox = true;
         m_graphicalPreview->setOptions(options);
         break;
 
