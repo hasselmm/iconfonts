@@ -48,12 +48,16 @@ public:
 
 protected:
     void changeEvent(QEvent *event) override;
+    bool eventFilter(QObject *target, QEvent *event) override;
 
     void setQuickProperty(const char *name, const QVariant &newValue);
     [[nodiscard]] QVariant quickProperty(const char *name) const;
 
 private:
+    void filterTopLevelWidget(QWidget *newTopLevelWidget);
+
     bool m_hasFontIcon = false;
+    QPointer<QWidget> m_topLevelWidget;
 };
 
 } // namespace IconFonts::Viewer

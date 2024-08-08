@@ -72,10 +72,18 @@ void QuickPreview::changeEvent(QEvent *event)
 {
     QWidget::changeEvent(event);
 
+    if (event->type() == QEvent::EnabledChange)
+        setQuickProperty("enabled", m_hasFontIcon && isEnabled());
+
+    filterTopLevelWidget(topLevelWidget());
+}
+
+bool QuickPreview::eventFilter(QObject *target, QEvent *event)
+{
     if (event->type() == QEvent::ActivationChange)
         setQuickProperty("active", isActiveWindow());
-    else if (event->type() == QEvent::EnabledChange)
-        setQuickProperty("enabled", m_hasFontIcon && isEnabled());
+
+    return QQuickWidget::eventFilter(target, event);
 }
 
 void QuickPreview::setQuickProperty(const char *name, const QVariant &newValue)
@@ -90,6 +98,17 @@ QVariant QuickPreview::quickProperty(const char *name) const
         return rootItem->property(name);
 
     return {};
+}
+
+void QuickPreview::filterTopLevelWidget(QWidget *newTopLevelWidget)
+{
+    if (const auto oldTopLevelWidget = std::exchange(m_topLevelWidget, newTopLevelWidget);
+            oldTopLevelWidget != newTopLevelWidget) {
+        if (oldTopLevelWidget)
+            oldTopLevelWidget->removeEventFilter(this);
+        if (newTopLevelWidget)
+            newTopLevelWidget->installEventFilter(this);
+    }
 }
 
 } // namespace IconFonts::Viewer
