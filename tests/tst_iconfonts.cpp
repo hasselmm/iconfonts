@@ -59,6 +59,15 @@ private:
 #error No fonts configured for testing
 #endif
 
+    enum class DrawIconOptional
+    {
+        None,
+        FillBox,
+        PixelSize,
+        PointSize,
+        Mode,
+    };
+
 private slots:
     void testSymbolConstructors()
     {
@@ -153,38 +162,65 @@ private slots:
 
     void testDrawIconOptions_data()
     {
-        QTest::addColumn<DrawIconOptions>("option1");
-        QTest::addColumn<DrawIconOptions>("option2");
+        QTest::addColumn<DrawIconOptions>          ("option1");
+        QTest::addColumn<DrawIconOptions>          ("option2");
+        QTest::addColumn<DrawIconOptional>("expectedOptional");
+        QTest::addColumn<bool>               ("expectDefault");
 
         QTest::newRow("fillBox")
                 << DrawIconOptions{.fillBox = true}
-                << DrawIconOptions{.fillBox = false};
+                << DrawIconOptions{.fillBox = false}
+                << DrawIconOptional::FillBox
+                << false;
 
         QTest::newRow("pixelSize")
                 << DrawIconOptions{.pixelSize = 12}
-                << DrawIconOptions{.pixelSize = 16};
+                << DrawIconOptions{.pixelSize = 16}
+                << DrawIconOptional::PixelSize
+                << false;
 
         QTest::newRow("pointSize")
                 << DrawIconOptions{.pointSize = 9.5}
-                << DrawIconOptions{.pointSize = 12};
+                << DrawIconOptions{.pointSize = 12}
+                << DrawIconOptional::PointSize
+                << false;
 
         QTest::newRow("applyColor")
                 << DrawIconOptions{.applyColor = true}
-                << DrawIconOptions{.applyColor = false};
+                << DrawIconOptions{.applyColor = false}
+                << DrawIconOptional::None
+                << true;
 
         QTest::newRow("mode")
                 << DrawIconOptions{.mode = QIcon::Normal}
-                << DrawIconOptions{.mode = QIcon::Active};
+                << DrawIconOptions{.mode = QIcon::Active}
+                << DrawIconOptional::Mode
+                << false;
     }
 
     void testDrawIconOptions()
     {
-        const QFETCH(DrawIconOptions, option1);
-        const QFETCH(DrawIconOptions, option2);
+        const QFETCH(DrawIconOptions,           option1);
+        const QFETCH(DrawIconOptions,           option2);
+        const QFETCH(DrawIconOptional, expectedOptional);
+        const QFETCH(bool,                expectDefault);
 
         QCOMPARE(option1, option1);
         QCOMPARE(option2, option2);
-        QVERIFY(option1 != option2);
+
+        QVERIFY (option1 != option2);
+        QCOMPARE(option1 == DrawIconOptions{}, expectDefault);
+        QVERIFY (option2 != DrawIconOptions{});
+
+        QCOMPARE(option1.fillBox.has_value(),   expectedOptional == DrawIconOptional::FillBox);
+        QCOMPARE(option1.pixelSize.has_value(), expectedOptional == DrawIconOptional::PixelSize);
+        QCOMPARE(option1.pointSize.has_value(), expectedOptional == DrawIconOptional::PointSize);
+        QCOMPARE(option1.mode.has_value(),      expectedOptional == DrawIconOptional::Mode);
+
+        QCOMPARE(option2.fillBox.has_value(),   expectedOptional == DrawIconOptional::FillBox);
+        QCOMPARE(option2.pixelSize.has_value(), expectedOptional == DrawIconOptional::PixelSize);
+        QCOMPARE(option2.pointSize.has_value(), expectedOptional == DrawIconOptional::PointSize);
+        QCOMPARE(option2.mode.has_value(),      expectedOptional == DrawIconOptional::Mode);
     }
 
     void testPreserveTransform()
