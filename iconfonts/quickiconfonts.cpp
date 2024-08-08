@@ -8,6 +8,19 @@
 namespace QuickIconFonts {
 namespace {
 
+static const auto s_registerConverters = [] {
+    QMetaType::registerConverter<IconFonts::DrawIconOptions, QuickIconFonts::DrawIconOptions>();
+    QMetaType::registerConverter<QuickIconFonts::DrawIconOptions, IconFonts::DrawIconOptions>();
+
+    QMetaType::registerConverter<IconFonts::FontIcon, QuickIconFonts::FontIcon>();
+    QMetaType::registerConverter<QuickIconFonts::FontIcon, IconFonts::FontIcon>();
+
+    QMetaType::registerConverter<IconFonts::Symbol, QuickIconFonts::Symbol>();
+    QMetaType::registerConverter<QuickIconFonts::Symbol, IconFonts::Symbol>();
+
+    return true;
+}();
+
 using ColorResolver = IconFonts::DrawIconOptions::ColorResolver;
 using IconMode = IconFonts::DrawIconOptions::IconMode;
 

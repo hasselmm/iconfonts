@@ -60,6 +60,7 @@ class QUICKICONFONTS_EXPORT FontIcon
 public:
     constexpr FontIcon() noexcept = default;
 
+    Q_INVOKABLE FontIcon(const IconFonts::FontIcon &icon) : m_icon{icon} {}
     Q_INVOKABLE FontIcon(const Symbol &symbol) : m_icon{symbol} {}
     Q_INVOKABLE FontIcon(int taggedUnicode) : m_icon{Symbol{taggedUnicode}} {}
 
