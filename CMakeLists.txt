@@ -22,9 +22,13 @@ add_compile_definitions(
 
 enable_testing()
 
-find_package(PythonModules REQUIRED COMPONENTS fontTools fontTools.ttx brotli)
-find_package(Qt6
-    REQUIRED COMPONENTS LinguistTools Test Widgets
+find_package(
+    PythonModules
+    REQUIRED COMPONENTS fontTools fontTools.ttx brotli)
+
+find_package(
+    Qt6
+    REQUIRED COMPONENTS Test Widgets
     OPTIONAL_COMPONENTS QuickTest QuickWidgets
 )
 
