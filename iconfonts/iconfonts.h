@@ -301,7 +301,7 @@ private:
 
 // FontIcon class // ===================================================================================================
 
-struct ICONFONTS_EXPORT DrawIconOptions : public named_options::options<bool, int, qreal>
+struct ICONFONTS_EXPORT DrawIconOptions final : public named_options::options<bool, int, qreal>
 {
     using ColorRole = QPalette::ColorRole;
     using enum ColorRole;
