@@ -233,6 +233,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_symbolList{new SymbolListWidget{this}}
     , m_fontSize{new FontSizeSpinBox{this}}
     , m_colorAction{new QAction{tr("Change Color"), this}}
+    , m_resetColorAction{new QAction{FontIcon{FormatColorReset}, tr("Reset Color"), this}}
     , m_graphicalPreview{new IconPreview{this}}
     , m_textualPreview{new QLabel{this}}
     , m_quickPreview{new QQuickWidget{this}}
@@ -245,7 +246,7 @@ MainWindow::MainWindow(QWidget *parent)
     layout->addLayout(createSymbolListLayout());
     layout->addLayout(createPreviewLayout(), 1);
 
-    setIcon(Symbol{} | palette().color(foregroundRole()));
+    setIcon(Symbol{});
     updateTextualPreview();
 }
 
@@ -360,6 +361,7 @@ QLayout *MainWindow::createPreviewLayout()
     toolBar->addSeparator();
     toolBar->addAction(m_colorAction);
     toolBar->addAction(ignoreColorAction);
+    toolBar->addAction(m_resetColorAction);
     toolBar->addSeparator();
     toolBar->addActions(iconModeGroup->actions());
     toolBar->addSeparator();
@@ -389,6 +391,8 @@ QLayout *MainWindow::createPreviewLayout()
             this, &MainWindow::onColorActionTriggered);
     connect(ignoreColorAction, &QAction::triggered,
             this, &MainWindow::setIgnoreColor);
+    connect(m_resetColorAction, &QAction::triggered,
+            this, &MainWindow::onResetColor);
 
     connect(m_fontSize, &FontSizeSpinBox::modeChanged,
             this, &MainWindow::setFontSizeMode);
@@ -569,9 +573,21 @@ void MainWindow::setIgnoreColor(bool newIgnoreColor)
     m_colorAction->setEnabled(options.applyColor);
 }
 
+void MainWindow::onResetColor()
+{
+    setIcon(icon() | QColor{});
+}
+
 void MainWindow::setIcon(const FontIcon &newIcon)
 {
-    m_colorAction->setIcon(Colors | newIcon.color());
+    const auto &newColor = newIcon.color();
+
+    if (newColor.isValid())
+        m_colorAction->setIcon(Colors | newColor);
+    else
+        m_colorAction->setIcon(FontIcon{FormatColorReset});
+
+    m_resetColorAction->setEnabled(newColor.isValid());
     m_graphicalPreview->setIcon(newIcon);
 }
 

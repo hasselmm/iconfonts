@@ -53,6 +53,7 @@ private:
     void setFontSizeMode(FontSizeSpinBox::Mode newMode);
     void onSetFontSize(int newFontSize);
     void setIgnoreColor(bool newIgnoreColor);
+    void onResetColor();
 
     void updateTextualPreview();
 
@@ -60,6 +61,7 @@ private:
     SymbolListWidget    *const m_symbolList;
     FontSizeSpinBox     *const m_fontSize;
     QAction             *const m_colorAction;
+    QAction             *const m_resetColorAction;
     IconPreview         *const m_graphicalPreview;
     QLabel              *const m_textualPreview;
     QQuickWidget        *const m_quickPreview;
