@@ -1,11 +1,12 @@
 qt_add_executable(
     IconFontsViewer WIN32
     main.cpp
-    symbollistwidget.h symbollistwidget.cpp
+
     fontlistwidget.h fontlistwidget.cpp
+    fontsizespinbox.h fontsizespinbox.cpp
     iconpreview.h iconpreview.cpp
     mainwindow.h mainwindow.cpp
-    fontsizespinbox.h fontsizespinbox.cpp
+    symbollistwidget.h symbollistwidget.cpp
 )
 
 target_link_libraries(
