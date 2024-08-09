@@ -46,7 +46,6 @@ function(iconfonts_download URL EXPECTED_HASH FILEPATH)
         EXPECTED_HASH "${EXPECTED_HASH}"
         STATUS download_status
         LOG download_log
-        SHOW_PROGRESS
     )
 
     if (NOT download_status MATCHES "0;")
