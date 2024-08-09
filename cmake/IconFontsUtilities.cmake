@@ -228,19 +228,23 @@ endfunction()
 # ----------------------------------------------------------------------------------------------------------------------
 # Actual implementation of `iconfonts_show()`.
 # ----------------------------------------------------------------------------------------------------------------------
-function(__iconfonts_show_impl FUNCTION_NAME LINE_NUMBER)
-    list(LENGTH ARGN variable_count)
-
-    if (variable_count GREATER 1)
-        message(STATUS "${FUNCTION_NAME}(), line ${LINE_NUMBER}:")
-
-        foreach(variable IN LISTS ARGN)
-            message(STATUS "  > ${variable} => '${${variable}}'")
-        endforeach()
-    elseif (variable_count GREATER 0)
-        message(STATUS "${FUNCTION_NAME}(), line ${LINE_NUMBER}: ${ARGN} => '${${ARGN}}'")
+function(__iconfonts_show_impl FUNCTION_NAME LINE_NUMBER LOGLEVEL)
+    if (NOT LOGLEVEL MATCHES "^(TRACE|VERBOSE|STATUS)\$")
+        __iconfonts_show_impl("${FUNCTION_NAME}" "${LINE_NUMBER}" STATUS "${LOGLEVEL}" ${ARGN})
     else()
-        message(STATUS "${FUNCTION_NAME}(), line ${LINE_NUMBER}: No variables give")
+        list(LENGTH ARGN variable_count)
+
+        if (variable_count GREATER 1)
+            message("${LOGLEVEL}" "${FUNCTION_NAME}(), line ${LINE_NUMBER}:")
+
+            foreach(variable IN LISTS ARGN)
+                message("${LOGLEVEL}" "  > ${variable} => '${${variable}}'")
+            endforeach()
+        elseif (variable_count GREATER 0)
+            message("${LOGLEVEL}" "${FUNCTION_NAME}(), line ${LINE_NUMBER}: ${ARGN} => '${${ARGN}}'")
+        else()
+            message("${LOGLEVEL}" "${FUNCTION_NAME}(), line ${LINE_NUMBER}: No variables give")
+        endif()
     endif()
 endfunction()
 

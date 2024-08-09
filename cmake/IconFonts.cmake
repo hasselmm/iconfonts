@@ -67,7 +67,7 @@ function(iconfonts_add_font)
             message(FATAL_ERROR "Github URL detected, but the account name is missing: ${ICONFONTS_BASE_URL}")
         endif()
 
-        message(TRACE "github_account: '${github_account}'")
+        iconfonts_show(TRACE github_account)
 
         if (github_details MATCHES "^/([^/@]+)([@/].*)\$")
             set(github_repository "${CMAKE_MATCH_1}")
@@ -76,7 +76,7 @@ function(iconfonts_add_font)
             message(FATAL_ERROR "Github URL detected, but the repository name is missing: ${ICONFONTS_BASE_URL}")
         endif()
 
-        message(TRACE "github_repository: '${github_repository}'")
+        iconfonts_show(TRACE github_repository)
 
         if (github_details MATCHES "^@(.+)\$")
             set(github_revision "${CMAKE_MATCH_1}")
@@ -84,7 +84,7 @@ function(iconfonts_add_font)
             message(FATAL_ERROR "Github URL detected, but the revision is missing: ${ICONFONTS_BASE_URL}")
         endif()
 
-        message(TRACE "github_revision: '${github_revision}'")
+        iconfonts_show(TRACE github_revision)
 
         set(ICONFONTS_BASE_URL "https://github.com/${github_account}/${github_repository}/")
     elseif (NOT ICONFONTS_BASE_URL MATCHES "/\$")
