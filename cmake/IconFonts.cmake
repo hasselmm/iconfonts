@@ -7,11 +7,6 @@ include(IconFontsPython)
 include(IconFontsStrings)
 include(IconFontsUtilities)
 
-# ----------------------------------------------------------------------------------------------------------------------
-# A command line tool for processing icon font metadata.
-# ----------------------------------------------------------------------------------------------------------------------
-iconfonts_add_python_script(IconFontsTool "${ICONFONTS_TOOL_EXECUTABLE}")
-
 # FIXME doxs
 function(iconfonts_add_font)
     set(options

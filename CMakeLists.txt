@@ -42,4 +42,12 @@ add_subdirectory(iconfontsviewer)
 add_subdirectory(namedoptions)
 add_subdirectory(tests)
 
+# ----------------------------------------------------------------------------------------------------------------------
+# A command line tool for processing icon font metadata.
+# ----------------------------------------------------------------------------------------------------------------------
+iconfonts_add_python_script(IconFontsTool "${ICONFONTS_TOOL_EXECUTABLE}")
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The project's documentation.
+# ----------------------------------------------------------------------------------------------------------------------
 add_custom_target(iconfontsdocs SOURCES LICENSE README.md)
