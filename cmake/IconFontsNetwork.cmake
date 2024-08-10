@@ -56,23 +56,6 @@ function(iconfonts_download URL EXPECTED_HASH FILEPATH)
 endfunction()
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Downloads a license file from `URL` to `OUTPUT_DIRECTORY`.
-# Compares the downloaded file with `EXPECTED_HASH`,
-# and reports the local filename in `OUTPUT_VARIABLE`.
-# ----------------------------------------------------------------------------------------------------------------------
-function(__iconfonts_download_license_file URL EXPECTED_HASH OUTPUT_DIRECTORY OUTPUT_VARIABLE)
-    if (URL MATCHES "\\.md\$")
-        set(filepath "${OUTPUT_DIRECTORY}/LICENSE.md")
-    else()
-        set(filepath "${OUTPUT_DIRECTORY}/LICENSE.txt")
-    endif()
-
-    iconfonts_download("${URL}" "${EXPECTED_HASH}" "${filepath}")
-
-    set("${OUTPUT_VARIABLE}" "${filepath}" PARENT_SCOPE)
-endfunction()
-
-# ----------------------------------------------------------------------------------------------------------------------
 # Downloads an archive from `URL` to `FILENAME`,
 # compares the downloaded file with `EXPECTED_HASH`,
 # and then extracts the archive to `DESTINATION`.

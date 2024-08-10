@@ -29,6 +29,10 @@ target_link_libraries(
     Qt::GuiPrivate # for QFontEngine
 )
 
+# FIXME remove this hack, or not?
+qt_add_library(IconFontsCollection OBJECT)
+target_link_libraries(IconFontsCollection PUBLIC IconFonts)
+
 # ----------------------------------------------------------------------------------------------------------------------
 # The QuickIconFonts library provides access to icon fonts at QtQuick level.
 # ----------------------------------------------------------------------------------------------------------------------
@@ -57,12 +61,13 @@ target_link_libraries(
     Qt::QuickPrivate
 )
 
+qt_add_library(QuickIconFontsCollection OBJECT)
+target_link_libraries(QuickIconFontsCollection PUBLIC QuickIconFonts)
+
 # Ant Design Icons # ---------------------------------------------------------------------------------------------------
 
 iconfonts_add_font_family(
-    OPTIONAL FONT_FAMILY "Ant Design Icons"
-    QUICK_TARGET QuickIconFonts
-    TARGET IconFonts
+    FONT_FAMILY "Ant Design Icons"
 
     BASE_URL            "https://github.com/ant-design/ant-design-icons@d7d0627628cdf47fa79e5c7b878aa205a977681d"
     RESOURCE_PREFIX     "/ant-design/icons"
@@ -88,8 +93,6 @@ iconfonts_add_font_family(
 
 iconfonts_add_font(
     FONT_FAMILY "Bootstrap"
-    QUICK_TARGET QuickIconFonts
-    TARGET IconFonts
 
     BASE_URL            "https://github.com/twbs/icons@v1.11.3"
     RESOURCE_PREFIX     "/bootstrap/icons"
@@ -108,8 +111,6 @@ iconfonts_add_font(
 
 iconfonts_add_font_family(
     FONT_FAMILY "Boxicons"
-    QUICK_TARGET QuickIconFonts
-    TARGET IconFonts
 
     BASE_URL            "https://github.com/atisawd/boxicons@9ffa9136e8681886bb7bd2145cd4098717ce1c11" # 2.1.4
     RESOURCE_PREFIX     "/boxicons"
@@ -135,8 +136,6 @@ iconfonts_add_font_family(
 
 iconfonts_add_font(
     FONT_FAMILY "Devicons"
-    QUICK_TARGET QuickIconFonts
-    TARGET IconFonts
 
     BASE_URL            "https://github.com/vorillaz/devicons@1.7.0"
     RESOURCE_PREFIX     "/vorillaz/devicons"
@@ -194,8 +193,6 @@ iconfonts_add_font_family(
 
 iconfonts_add_font_family(
     FONT_FAMILY "Font APEX"
-    QUICK_TARGET QuickIconFonts
-    TARGET IconFonts
 
     BASE_URL            "https://github.com/oracle/font-apex@24631d9cc7ebb23ccc58bc676343d288bf453a62"
     RESOURCE_PREFIX     "/oracle.com/font-apex"
@@ -219,8 +216,6 @@ iconfonts_add_font_family(
 
 iconfonts_add_font_family(
     FONT_FAMILY "Font Awesome 5"
-    QUICK_TARGET QuickIconFonts
-    TARGET IconFonts
 
     BASE_URL            "https://github.com/FortAwesome/Font-Awesome@5.15.4"
     RESOURCE_PREFIX     "/fontawesome/5"
@@ -244,8 +239,6 @@ iconfonts_add_font_family(
 
 iconfonts_add_font_family(
     FONT_FAMILY "Font Awesome 6"
-    QUICK_TARGET QuickIconFonts
-    TARGET IconFonts
 
     BASE_URL            "https://github.com/FortAwesome/Font-Awesome@6.6.0"
     RESOURCE_PREFIX     "/fontawesome/6"
@@ -269,8 +262,6 @@ iconfonts_add_font_family(
 
 iconfonts_add_font_family(
     FONT_FAMILY "Foundicons"
-    QUICK_TARGET QuickIconFonts
-    TARGET IconFonts
 
     BASE_URL            "https://github.com/zurb/foundation-icons@74f63dc35d569a8b796e86add76a0a535f96f734"
     RESOURCE_PREFIX     "/zurb/foundation-icons"
@@ -305,8 +296,6 @@ iconfonts_add_font_family(
 
 iconfonts_add_font(
     FONT_FAMILY "IcoMoon Free"
-    QUICK_TARGET QuickIconFonts
-    TARGET IconFonts
 
     BASE_URL            "https://github.com/Keyamoon/IcoMoon-Free@d006795ede82361e1bac1ee76f215cf1dc51e4ca"
     RESOURCE_PREFIX     "/icomoon/free"
@@ -325,8 +314,6 @@ iconfonts_add_font(
 
 iconfonts_add_font_family(
     FONT_FAMILY "Line Awesome"
-    QUICK_TARGET QuickIconFonts
-    TARGET IconFonts
 
     BASE_URL            "https://github.com/icons8/line-awesome@78a101217707c9b1c4dcf2a821be75684e36307f" # 1.3.1
     RESOURCE_PREFIX     "/icons8/line-awesome"
@@ -353,8 +340,6 @@ iconfonts_add_font_family(
 
 iconfonts_add_font(
     FONT_FAMILY "Lucide"
-    QUICK_TARGET QuickIconFonts
-    TARGET IconFonts
 
     BASE_URL            "https://github.com/lucide-icons/lucide@0.424.0"
     RESOURCE_PREFIX     "/lucide-icons/lucide"
@@ -377,8 +362,6 @@ iconfonts_add_font(
 
 iconfonts_add_font_family(
     FONT_FAMILY "Material Icons"
-    QUICK_TARGET QuickIconFonts
-    TARGET IconFonts
 
     BASE_URL            "https://github.com/google/material-design-icons@f2c8df1afe6f755459d30ebe3abeec7d4346ea85"
     RESOURCE_PREFIX     "/google/materialicons"
@@ -418,8 +401,6 @@ iconfonts_add_font_family(
 
 iconfonts_add_font_family(
     FONT_FAMILY "Material Symbols"
-    QUICK_TARGET QuickIconFonts
-    TARGET IconFonts
 
     BASE_URL            "https://github.com/google/material-design-icons@f2c8df1afe6f755459d30ebe3abeec7d4346ea85"
     RESOURCE_PREFIX     "/google/materialsymbols"
@@ -449,8 +430,6 @@ iconfonts_add_font_family(
 
 iconfonts_add_font(
     FONT_FAMILY "Nonicons"
-    QUICK_TARGET QuickIconFonts
-    TARGET IconFonts
 
     BASE_URL            "https://github.com/yamatsum/nonicons@8454b3b6c3ceeee18b386b7882c5a071dcf0f3af" # 0.18
     RESOURCE_PREFIX     "/yamatsum/nonicons"
@@ -470,8 +449,6 @@ iconfonts_add_font(
 
 iconfonts_add_font(
     FONT_FAMILY "Open Iconic"
-    QUICK_TARGET QuickIconFonts
-    TARGET IconFonts
 
     BASE_URL            "https://github.com/iconic/open-iconic@1.1.1"
     RESOURCE_PREFIX     "/useiconic.com/open"
@@ -491,8 +468,6 @@ iconfonts_add_font(
 
 iconfonts_add_font_family(
     FONT_FAMILY "Phosphor Icons"
-    QUICK_TARGET QuickIconFonts
-    TARGET IconFonts
 
     BASE_URL            "https://github.com/phosphor-icons/web@v2.0.2"
     RESOURCE_PREFIX     "/phosphoricons/"
@@ -532,8 +507,6 @@ iconfonts_add_font_family(
 
 iconfonts_add_font(
     FONT_FAMILY "Remix Icon"
-    QUICK_TARGET QuickIconFonts
-    TARGET IconFonts
 
     BASE_URL            "https://github.com/Remix-Design/RemixIcon@v4.3.0"
     RESOURCE_PREFIX     "/remixicon"
@@ -552,7 +525,7 @@ iconfonts_add_font(
 # Segoe Symbol Fonts # -------------------------------------------------------------------------------------------------
 
 iconfonts_add_system_font_family(
-    TARGET IconFonts FONT_FAMILY "Segoe"
+    RECOMMENDED FONT_FAMILY "Segoe"
 
     BASE_URL            "https://github.com/microsoft/microsoft-ui-xaml@winui3/release/1.5.5"
     RESOURCE_PREFIX     "/microsoft/segoe"
@@ -570,8 +543,6 @@ iconfonts_add_system_font_family(
 
 iconfonts_add_font(
     FONT_FAMILY "Simple Icons"
-    QUICK_TARGET QuickIconFonts
-    TARGET IconFonts
 
     BASE_URL            "https://github.com/simple-icons/simple-icons-font@13.3.0"
     RESOURCE_PREFIX     "/simple-icons"
@@ -594,8 +565,6 @@ iconfonts_add_font(
 
 iconfonts_add_font(
     FONT_FAMILY "Simple Line Icons"
-    QUICK_TARGET QuickIconFonts
-    TARGET IconFonts
 
     BASE_URL            "https://github.com/thesabbir/simple-line-icons@v2.5.4"
     RESOURCE_PREFIX     "/thesabbir/simple-line-icons"
@@ -615,8 +584,6 @@ iconfonts_add_font(
 
 iconfonts_add_font_family(
     FONT_FAMILY "Tabler Icons"
-    QUICK_TARGET QuickIconFonts
-    TARGET IconFonts
 
     BASE_URL            "https://github.com/tabler/tabler-icons@v3.11.0"
     RESOURCE_PREFIX     "/tabler/icons"
@@ -646,8 +613,6 @@ iconfonts_add_font_family(
 
 iconfonts_add_font(
     FONT_FAMILY "Themify Icons"
-    QUICK_TARGET QuickIconFonts
-    TARGET IconFonts
 
     BASE_URL            "https://github.com/lykmapipo/themify-icons@v0.1.2"
     RESOURCE_PREFIX     "/themify/icons"
@@ -667,8 +632,6 @@ iconfonts_add_font(
 
 iconfonts_add_font(
     FONT_FAMILY "Typicons"
-    QUICK_TARGET QuickIconFonts
-    TARGET IconFonts
 
     BASE_URL            "https://github.com/stephenhutchings/typicons.font@v2.1.2"
     RESOURCE_PREFIX     "/stephenhutchings/typicons"
@@ -687,8 +650,6 @@ iconfonts_add_font(
 
 iconfonts_add_font(
     FONT_FAMILY "VS Code Icons"
-    QUICK_TARGET QuickIconFonts
-    TARGET IconFonts
 
     BASE_URL            "https://github.com/microsoft/vscode-codicons@0.0.36"
     RESOURCE_PREFIX     "/microsoft/codicons"
@@ -707,8 +668,6 @@ iconfonts_add_font(
 
 iconfonts_add_font(
     FONT_FAMILY "Weather Icons"
-    QUICK_TARGET QuickIconFonts
-    TARGET IconFonts
 
     BASE_URL            "https://github.com/erikflowers/weather-icons@2.0.10"
     RESOURCE_PREFIX     "/erikflowers/weather-icons"

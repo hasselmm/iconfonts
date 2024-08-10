@@ -9,7 +9,7 @@
 
 namespace IconFonts::inline Symbols::${CODEGEN_FONT_NAMESPACE} {
 
-Q_NAMESPACE_EXPORT(ICONFONTS_EXPORT)
+Q_NAMESPACE_EXPORT(/*ICONFONTS_EXPORT*/) // FIXME
 
 enum class Symbol : char32_t {
 ${CODEGEN_ICON_DEFINITIONS}

@@ -1,19 +1,13 @@
 # ----------------------------------------------------------------------------------------------------------------------
-# Check for Python as using Python can significantly accelerate metadata parsing.
-# ----------------------------------------------------------------------------------------------------------------------
-
-if (NOT TARGET Python3::Interpreter)
-    find_package(Python3 COMPONENTS Interpreter)
-    message(STATUS "Using Python: ${Python3_EXECUTABLE}")
-endif()
-
-# ----------------------------------------------------------------------------------------------------------------------
 # Enable minimal automated testing
 # ----------------------------------------------------------------------------------------------------------------------
 
-option(ICONFONTS_ENABLE_TESTING "Run trivial unit tests while configuring" OFF)
-
 if (ICONFONTS_ENABLE_TESTING)
+    if (NOT TARGET Python3::Interpreter) # FIXME do not duplicate this
+        find_package(Python3 COMPONENTS Interpreter)
+        message(STATUS "Using Python: ${Python3_EXECUTABLE}")
+    endif()
+
     find_package(PythonModules REQUIRED COMPONENTS pylint mypy)
 endif()
 
@@ -22,6 +16,11 @@ endif()
 # ----------------------------------------------------------------------------------------------------------------------
 function(iconfonts_add_python_linter TARGET LINTER SOURCE_FILENAME)
     iconfonts_assert(TARGET "${TARGET}")
+
+    if (NOT TARGET Python3::Interpreter)
+        find_package(Python3 COMPONENTS Interpreter)
+        message(STATUS "Using Python: ${Python3_EXECUTABLE}")
+    endif()
 
     add_custom_command(
         OUTPUT  ${NAME}_${LINTER}.timestamp

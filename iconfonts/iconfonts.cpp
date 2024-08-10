@@ -214,6 +214,12 @@ template<FontIcon::Transform Transform>
     };
 }
 
+auto knownFonts()
+{
+    static auto s_fontRegistry = QHash<FontTag, FontInfo>{};
+    return &s_fontRegistry;
+}
+
 } // namespace
 
 FontId loadApplicationFont(const QMetaType &font, const QString &fileName)
@@ -551,10 +557,48 @@ QString FontInfo::name(int index) const
 
 FontInfo FontInfo::fromTag(FontTag tag)
 {
-    const auto &fontList = knownFonts();
-    const auto &font = fontList.value(tag.index() - 1);
-    Q_ASSERT(font.tag().index() == tag.index()); // FIXME: figure out how to implement proper equality operator
-    return font;
+    return Private::knownFonts()->value(tag);
+}
+
+QList<FontInfo> FontInfo::knownFonts()
+{
+    static auto s_knownFonts = QList<FontInfo>{};
+
+    if (s_knownFonts.size() != Private::knownFonts()->size()) {
+        auto newKnownFonts = Private::knownFonts()->values();
+
+        std::sort(newKnownFonts.begin(), newKnownFonts.end(),
+                  [](const FontInfo &l, const FontInfo &r) {
+            return std::make_tuple(l.fontName(), l.tag().value())
+                    < std::make_tuple(r.fontName(), r.tag().value());
+        });
+
+        s_knownFonts = std::move(newKnownFonts);
+    }
+
+    return s_knownFonts;
+}
+
+bool FontInfo::registerFont(const FontInfo &font)
+{
+    const auto knownFonts = Private::knownFonts();
+
+    if (const auto it = knownFonts->constFind(font.tag()); it == knownFonts->constEnd()) {
+        knownFonts->insert(font.tag(), font);
+        return true;
+    } else if (*it != font) {
+        qCWarning(lcIconFonts,
+                  R"(Other font already registered for index %d: "%ls")",
+                  font.tag().index(), qUtf16Printable(it->fontName()));
+
+        return false;
+    } else {
+        qCWarning(lcIconFonts,
+                  R"(Font "%ls" is already registered)",
+                  qUtf16Printable(it->fontName()));
+
+        return false;
+    }
 }
 
 QMetaEnum FontInfo::metaEnum() const

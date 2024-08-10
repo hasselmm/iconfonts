@@ -13,6 +13,7 @@
 #else
 #error Font "Material Symbols Rounded" required
 #endif
+#include <iconfonts/materialsymbolssharp.h>
 
 #include <QActionGroup>
 #include <QColorDialog>
@@ -98,7 +99,7 @@ template<>
         return RotateRight | Svg::violet | Rotate180;
 
     case Matrix:
-        return Calculate;
+        return Transform;
     }
 
     return {};
@@ -268,6 +269,8 @@ MainWindow::MainWindow(QWidget *parent)
     , m_leftPreviewGroup{createActionGroup<PreviewType>(this)}
     , m_rightPreviewGroup{createActionGroup<PreviewType>(this)}
 {
+    // qMetaTypeId<IconFonts::MaterialSymbolsSharp>();
+
     const auto layout = new QHBoxLayout{this};
 
     layout->addLayout(createFontListLayout());

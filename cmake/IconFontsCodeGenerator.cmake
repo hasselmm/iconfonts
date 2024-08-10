@@ -63,13 +63,18 @@ function(__iconfonts_generate_from_template SOURCE_FILEPATH TARGET_FILEPATH)
 endfunction()
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Generates C++ code from `ICON_DEFINITIONS`.
+# Defines the named arguments for __iconfonts_generate_source_code().
 # ----------------------------------------------------------------------------------------------------------------------
-function(__iconfonts_generate_source_code)
+macro(__iconfonts_define_generate_source_code_arguments)
     set(mandatory_values
-        TARGET              # FIXME doxs
-        INFO_FILEPATH
+        RESOURCE_PREFIX
+        SOURCE_FILEPATH     # FIXME doxs
+        HEADER_FILEPATH
+        QUICK_FILEPATH
         FONT_FAMILY
+        FONT_NAMESPACE
+        FONT_TAG
+        INFO_FILEPATH
         LICENSE_FILEPATH)
 
     set(optional_values
@@ -79,44 +84,44 @@ function(__iconfonts_generate_source_code)
         INFO_OPTIONS
         QUICK_TARGET)
 
+    set(options)
     set(single_values ${mandatory_values} ${optional_values})
+    set(multiple_values)
+endmacro()
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Generates C++ code from `ICON_DEFINITIONS`.
+# ----------------------------------------------------------------------------------------------------------------------
+function(__iconfonts_generate_source_code)
+    __iconfonts_define_generate_source_code_arguments()
     cmake_parse_arguments(ICONFONTS "" "${single_values}" "" ${ARGN}) # ----------------------- parse function arguments
     iconfonts_require_mandatory_arguments(ICONFONTS ${mandatory_values})
     iconfonts_reject_unparsed_arguments(ICONFONTS)
-
-    __iconfonts_get_target_properties("${ICONFONTS_TARGET}" ICONFONTS)
 
     set(font_name "${ICONFONTS_FONT_FAMILY}") # ------------------------------------------- generate various identifiers
 
     __iconfonts_make_symbol("${ICONFONTS_FONT_FAMILY}" family_symbol)
 
     if (ICONFONTS_FONT_VARIANT)
-        string(TOLOWER "${ICONFONTS_FONT_FAMILY}-${ICONFONTS_FONT_VARIANT}" basename)
         __iconfonts_make_symbol("${ICONFONTS_FONT_VARIANT}" variant_symbol)
-        set(font_namespace "${family_symbol}::${variant_symbol}")
         string(APPEND font_name " ${ICONFONTS_FONT_VARIANT}")
     else()
-        string(TOLOWER "${ICONFONTS_FONT_FAMILY}" basename)
-        set(font_namespace "${family_symbol}")
         set(variant_symbol "")
     endif()
 
-    string(REGEX REPLACE "[\t _-]" "" basename "${basename}")
-
     set(header_template "${ICONFONTS_MODULE_DIR}/staticfontinfo.h.in")
-    set(header_filepath "${ICONFONTS_GENERATED_SOURCES_DIR}/${basename}.h")
+    set(header_filepath "${ICONFONTS_HEADER_FILEPATH}")
 
     set(source_template "${ICONFONTS_MODULE_DIR}/staticfontinfo.cpp.in")
-    set(source_filepath "${ICONFONTS_GENERATED_SOURCES_DIR}/${basename}.cpp")
+    set(source_filepath "${ICONFONTS_SOURCE_FILEPATH}")
 
     set(quick_template "${ICONFONTS_MODULE_DIR}/quicksymbol.h.in")
-    set(quick_filepath "${ICONFONTS_GENERATED_SOURCES_DIR}/quick${basename}.h")
+    set(quick_filepath "${ICONFONTS_QUICK_FILEPATH}")
 
-    set_property(
-        DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
-        "${header_template}" "${source_template}" "${quick_template}")
+    cmake_path(GET header_filepath FILENAME header_filename)
 
-    string(TOUPPER "ICONFONTS_${basename}_H" header_guard) # ---------------------------- generate file header variables
+    string(TOUPPER "ICONFONTS_${header_filename}" header_guard) # ----------------------- generate file header variables
+    string(REPLACE "." "_" header_guard "${header_guard}")
 
     cmake_path(
         RELATIVE_PATH ICONFONTS_INFO_FILEPATH
@@ -132,7 +137,7 @@ function(__iconfonts_generate_source_code)
         cmake_path(GET ICONFONTS_FONT_FILEPATH FILENAME filename)
 
         set(font_type "Application")
-        set(font_family_expression "font<Symbols::${font_namespace}::Symbol>().family()")
+        set(font_family_expression "font<Symbols::${ICONFONTS_FONT_NAMESPACE}::Symbol>().family()")
         set(font_filename_literal "u\":${ICONFONTS_RESOURCE_PREFIX}/${filename}\"_s")
     elseif (ICONFONTS_FONT_FAMILY)
         set(font_type "System")
@@ -149,36 +154,27 @@ function(__iconfonts_generate_source_code)
     endif()
 
     set(current_list_file ${CMAKE_CURRENT_FUNCTION_LIST_FILE}) # ------------------------------- generate code if needed
-    set(common_dependency_list ICONFONTS_INFO_FILEPATH CMAKE_CURRENT_LIST_FILE current_list_file)
 
-    __iconfonts_check_recent(header_is_recent header_filepath header_template ${common_dependency_list})
-    __iconfonts_check_recent(source_is_recent source_filepath source_template ${common_dependency_list})
-    __iconfonts_check_recent( quick_is_recent  quick_filepath  quick_template ${common_dependency_list})
+    __iconfonts_collect_icons( # ----------------------------------------- collect icons and generate symbol definitions
+        FONT_VARIANT    "${ICONFONTS_FONT_VARIANT}"
+        FILEPATH        "${ICONFONTS_INFO_FILEPATH}"
+        FILETYPE        "${ICONFONTS_INFO_FILETYPE}"
+        OPTIONS         "${ICONFONTS_INFO_OPTIONS}"
+        OUTPUT_VARIABLE  icon_definition_list)
 
-    if (header_is_recent AND source_is_recent AND quick_is_recent)
-        message(STATUS "No code generation needed for ${font_namespace}")
-    else()
-        __iconfonts_collect_icons( # ----------------------------------------- collect icons and generate symbol definitions
-            FONT_VARIANT    "${ICONFONTS_FONT_VARIANT}"
-            FILEPATH        "${ICONFONTS_INFO_FILEPATH}"
-            FILETYPE        "${ICONFONTS_INFO_FILETYPE}"
-            OPTIONS         "${ICONFONTS_INFO_OPTIONS}"
-            OUTPUT_VARIABLE  icon_definition_list)
+    list(JOIN icon_definition_list "" icon_definition_list)
 
-        list(JOIN icon_definition_list "" icon_definition_list)
+    string(
+        REGEX REPLACE "\n\$" ""
+        icon_definition_list "${icon_definition_list}")
 
-        string(
-            REGEX REPLACE "\n\$" ""
-            icon_definition_list "${icon_definition_list}")
+    string(
+        REGEX REPLACE
+        "(([^=\t ]+)[\t ]*) = [^,]+,"
+        "    \\1 = tagged<Symbol::\\2>,"
+        quick_icon_definition_list "${icon_definition_list}")
 
-        string(
-            REGEX REPLACE
-            "(([^=\t ]+)[\t ]*) = [^,]+,"
-            "    \\1 = tagged<Symbol::\\2>,"
-            quick_icon_definition_list "${icon_definition_list}")
-
-        iconfonts_assert(NOT icon_definition_list STREQUAL quick_icon_definition_list)
-    endif()
+    iconfonts_assert(NOT icon_definition_list STREQUAL quick_icon_definition_list)
 
     set(mandatory_variables # ----------------------------------------------------- define variables for code generation
         FONT_NAMESPACE          # C++ namespace of the genereated font
@@ -209,80 +205,55 @@ function(__iconfonts_generate_source_code)
     set(optional_variables
         FONT_VARIANT_SYMBOL)    # C++ symbol for the font variant
 
-    if (NOT header_is_recent) # -------------------------------------------------------- generate static fontinfo header
-        __iconfonts_generate_from_template(
-            "${header_template}" "${header_filepath}"
+    __iconfonts_generate_from_template( # ---------------------------------------------- generate static fontinfo header
+        "${header_template}" "${header_filepath}"
 
-            HEADER_GUARD            "${header_guard}"
-            FONT_NAMESPACE          "${font_namespace}"
-            FONT_SYMBOL             "${family_symbol}${variant_symbol}"
-            FONT_TAG                "${ICONFONTS_NEXT_FONT_TAG}"
-            FONT_FAMILY_SYMBOL      "${family_symbol}"
-            FONT_VARIANT_SYMBOL     "${variant_symbol}"
-            FONT_TYPE               "${font_type}"
-            INFO_FILEPATH           "${pretty_info_filename}"
-            LIST_FILEPATH           "${pretty_list_filename}"
-            ICON_DEFINITIONS        "${icon_definition_list}"
-            VARIABLES                header_mandatory_variables
-            OPTIONAL_VARIABLES       optional_variables)
-    endif()
+        HEADER_GUARD            "${header_guard}"
+        FONT_NAMESPACE          "${ICONFONTS_FONT_NAMESPACE}"
+        FONT_SYMBOL             "${family_symbol}${variant_symbol}"
+        FONT_TAG                "${ICONFONTS_FONT_TAG}"
+        FONT_FAMILY_SYMBOL      "${family_symbol}"
+        FONT_VARIANT_SYMBOL     "${variant_symbol}"
+        FONT_TYPE               "${font_type}"
+        INFO_FILEPATH           "${pretty_info_filename}"
+        LIST_FILEPATH           "${pretty_list_filename}"
+        ICON_DEFINITIONS        "${icon_definition_list}"
+        VARIABLES                header_mandatory_variables
+        OPTIONAL_VARIABLES       optional_variables)
 
-    if (NOT source_is_recent) # -------------------------------------------------------- generate static fontinfo source
-        __iconfonts_generate_from_template(
-            "${source_template}" "${source_filepath}"
+    __iconfonts_generate_from_template( # ---------------------------------------------- generate static fontinfo source
+        "${source_template}" "${source_filepath}"
 
-            FONT_NAMESPACE          "${font_namespace}"
-            FONT_FAMILY_EXPRESSION  "${font_family_expression}"
-            FONT_SYMBOL             "${family_symbol}${variant_symbol}"
-            FONT_FAMILY_SYMBOL      "${family_symbol}"
-            FONT_VARIANT_SYMBOL     "${variant_symbol}"
-            FONT_FILENAME_LITERAL   "${font_filename_literal}"
-            HEADER_FILENAME         "${basename}.h"
-            FONT_NAME               "${font_name}"
-            INFO_FILEPATH           "${pretty_info_filename}"
-            LIST_FILEPATH           "${pretty_list_filename}"
-            LICENSE_FILEPATH        "${ICONFONTS_RESOURCE_PREFIX}/${license_filename}"
-            RESOURCE_SYMBOL         "${family_symbol}"
-            VARIABLES                source_mandatory_variables
-            OPTIONAL_VARIABLES       optional_variables)
-    endif()
+        FONT_NAMESPACE          "${ICONFONTS_FONT_NAMESPACE}"
+        FONT_FAMILY_EXPRESSION  "${font_family_expression}"
+        FONT_SYMBOL             "${family_symbol}${variant_symbol}"
+        FONT_FAMILY_SYMBOL      "${family_symbol}"
+        FONT_VARIANT_SYMBOL     "${variant_symbol}"
+        FONT_FILENAME_LITERAL   "${font_filename_literal}"
+        HEADER_FILENAME         "${header_filename}"
+        FONT_NAME               "${font_name}"
+        INFO_FILEPATH           "${pretty_info_filename}"
+        LIST_FILEPATH           "${pretty_list_filename}"
+        LICENSE_FILEPATH        "${ICONFONTS_RESOURCE_PREFIX}/${license_filename}"
+        RESOURCE_SYMBOL         "${family_symbol}"
+        VARIABLES                source_mandatory_variables
+        OPTIONAL_VARIABLES       optional_variables)
 
-    if (NOT quick_is_recent AND ICONFONTS_QUICK_TARGET) # -------------------------- generate tagged symbols for QtQuick
-        __iconfonts_generate_from_template(
-            "${quick_template}" "${quick_filepath}"
+    __iconfonts_generate_from_template( # ------------------------------------------ generate tagged symbols for QtQuick
+        "${quick_template}" "${quick_filepath}"
 
-            HEADER_FILENAME         "${basename}.h"
-            HEADER_GUARD            "QUICK${header_guard}"
-            FONT_NAMESPACE          "${font_namespace}"
-            FONT_SYMBOL             "${family_symbol}${variant_symbol}"
-            FONT_FAMILY_SYMBOL      "${family_symbol}"
-            FONT_VARIANT_SYMBOL     "${variant_symbol}"
-            FONT_TYPE               "${font_type}"
-            INFO_FILEPATH           "${pretty_info_filename}"
-            LIST_FILEPATH           "${pretty_list_filename}"
-            ICON_DEFINITIONS        "${quick_icon_definition_list}"
-            VARIABLES                quick_mandatory_variables
-            OPTIONAL_VARIABLES       optional_variables)
-    endif()
-
-    math(EXPR next_font_tag "${ICONFONTS_NEXT_FONT_TAG} + 1") # ----------------------- generate and store next font tag
-
-    set_property(
-        TARGET "${ICONFONTS_TARGET}" PROPERTY
-        ICONFONTS_NEXT_FONT_TAG "${next_font_tag}")
-
-    target_sources( # ----------------------------------------------------------------------------------- report results
-        "${ICONFONTS_TARGET}" PRIVATE
-        "${header_filepath}"
-        "${source_filepath}")
-
-    if (ICONFONTS_QUICK_TARGET)
-        target_sources("${ICONFONTS_QUICK_TARGET}" PRIVATE "${quick_filepath}")
-    endif()
-
-    set_property(
-        TARGET "${ICONFONTS_TARGET}" APPEND PROPERTY
-        ICONFONTS_FONT_NAMESPACES "${font_namespace}")
+        HEADER_FILENAME         "${header_filename}"
+        HEADER_GUARD            "QUICK${header_guard}"
+        FONT_NAMESPACE          "${ICONFONTS_FONT_NAMESPACE}"
+        FONT_SYMBOL             "${family_symbol}${variant_symbol}"
+        FONT_FAMILY_SYMBOL      "${family_symbol}"
+        FONT_VARIANT_SYMBOL     "${variant_symbol}"
+        FONT_TYPE               "${font_type}"
+        INFO_FILEPATH           "${pretty_info_filename}"
+        LIST_FILEPATH           "${pretty_list_filename}"
+        ICON_DEFINITIONS        "${quick_icon_definition_list}"
+        VARIABLES                quick_mandatory_variables
+        OPTIONAL_VARIABLES       optional_variables)
 endfunction(__iconfonts_generate_source_code)
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -367,5 +338,5 @@ function(iconfonts_finalize_target TARGET)
         STATIC_ASSERTION_LIST   "${known_fonts_assertion_list}"
         VARIABLES                registry_variables)
 
-    target_sources("${TARGET}" PRIVATE "${registry_filepath}")
+    # target_sources("${TARGET}" PRIVATE "${registry_filepath}")
 endfunction(iconfonts_finalize_target)

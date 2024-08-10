@@ -201,31 +201,6 @@ function(__iconfonts_option)
 endfunction()
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Checks if the file in variable `TARGET_FILEPATH` exists, and is more recent than any file in `ARGN`.
-# ----------------------------------------------------------------------------------------------------------------------
-function(__iconfonts_check_recent OUTPUT_VARIABLE TARGET_FILEPATH)
-    set(target_filepath "${${TARGET_FILEPATH}}")
-    set(is_recent YES)
-
-    if (NOT EXISTS "${target_filepath}")
-        message(TRACE "does not exist: '${target_filepath}'")
-        set(is_recent NO)
-    else()
-        foreach(source_filepath IN LISTS ARGN)
-            iconfonts_assert(EXISTS "${${source_filepath}}")
-
-            if (NOT "${target_filepath}" IS_NEWER_THAN "${${source_filepath}}")
-                message(TRACE "not newer than '${source_filepath}': '${target_filepath}'")
-                set(is_recent NO)
-                break()
-            endif()
-        endforeach()
-    endif()
-
-    set("${OUTPUT_VARIABLE}" "${is_recent}" PARENT_SCOPE)
-endfunction()
-
-# ----------------------------------------------------------------------------------------------------------------------
 # Actual implementation of `iconfonts_show()`.
 # ----------------------------------------------------------------------------------------------------------------------
 function(__iconfonts_show_impl FUNCTION_NAME LINE_NUMBER LOGLEVEL)

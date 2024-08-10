@@ -5,19 +5,38 @@
 #include "${CODEGEN_HEADER_FILENAME}"
 #include "iconfonts_p.h"
 
-[[nodiscard]] static bool initIconFonts${CODEGEN_FONT_SYMBOL}Resource()
-{
-    static const auto s_initialized = [] {
-        Q_INIT_RESOURCE(${CODEGEN_RESOURCE_SYMBOL});
-        return true;
-    }();
+using namespace Qt::StringLiterals;
 
-    return s_initialized;
+static bool initFontResource()
+{
+    constexpr auto fontType = IconFonts::type<IconFonts::Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol>();
+
+    if constexpr (fontType == IconFonts::FontInfo::Type::Application) {
+        Q_INIT_RESOURCE(IconFonts_${CODEGEN_FONT_SYMBOL}_font);
+        return true;
+    } else {
+        return false;
+    }
+}
+
+static void initLicenseResource()
+{
+    Q_INIT_RESOURCE(IconFonts_${CODEGEN_FONT_FAMILY_SYMBOL}_license);
 }
 
 namespace IconFonts {
+namespace {
 
-using namespace Qt::StringLiterals;
+const auto s_font${CODEGEN_FONT_SYMBOL}Loaded = [] {
+    qInfo("Registering ${CODEGEN_FONT_SYMBOL}");
+    return IconFonts::FontInfo::registerFont<IconFonts::Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol>();
+}();
+
+} // namespace
+
+// FIXME remove this hack
+#undef ICONFONTS_EXPORT
+#define ICONFONTS_EXPORT
 
 template<> ICONFONTS_EXPORT QString fontName<Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol>()
 { return u"${CODEGEN_FONT_NAME}"_s; }
@@ -31,8 +50,32 @@ template<> ICONFONTS_EXPORT QString fontFileName<Symbols::${CODEGEN_FONT_NAMESPA
 template<> ICONFONTS_EXPORT QString licenseFileName<Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol>()
 { return u":${CODEGEN_LICENSE_FILEPATH}"_s; }
 
-template<> ICONFONTS_EXPORT bool Private::loadResources<Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol>()
-{ return initIconFonts${CODEGEN_FONT_SYMBOL}Resource(); }
+template<> ICONFONTS_EXPORT FontId fontId<Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol>()
+{
+    static const auto s_fontId = [] {
+        if (initFontResource()) {
+            return Private::loadApplicationFont(QMetaType::fromType<Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol>(),
+                                                fontFileName<Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol>());
+        } else {
+            return FontId{FontId::Invalid};
+        }
+    }();
+
+    return s_fontId;
+}
+
+template<> ICONFONTS_EXPORT QString licenseText<Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol>()
+{
+    static const auto s_licenseLoaded = [] {
+        initFontResource();
+        return true;
+    }();
+
+    if (s_licenseLoaded)
+        return Private::readText(licenseFileName<Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol>());
+
+    return {};
+}
 
 template const FontInfo &FontInfo::instance<Symbols::${CODEGEN_FONT_NAMESPACE}::Symbol>() noexcept;
 

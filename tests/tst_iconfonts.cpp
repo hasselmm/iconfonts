@@ -1,12 +1,7 @@
 #include "iconfonts/iconfonts.h"
-
-#ifdef ICONFONTS_ENABLE_SEGOE_FLUENTICONS
+#include "iconfonts/iconfontsconfig.h"
 #include "iconfonts/segoefluenticons.h"
-#endif
-
-#ifdef ICONFONTS_ENABLE_SEGOE_MDL2ASSETS
 #include "iconfonts/segoemdl2assets.h"
-#endif
 
 #include <QFontMetrics>
 #include <QTest>
@@ -31,6 +26,17 @@ class IconFontsTest : public QObject
     Q_OBJECT
 
 private:
+    enum class DrawIconOptional
+    {
+        None,
+        FillBox,
+        PixelSize,
+        PointSize,
+        Mode,
+    };
+
+    using enum SegoeFluentIcons;
+
     void collectFontInfoData()
     {
         QTest::addColumn<FontInfo>("font");
@@ -50,23 +56,6 @@ private:
     }
 
     QHash<QMetaType, bool> m_fontSeen;
-
-#if   defined(ICONFONTS_ENABLE_SEGOE_FLUENTICONS)
-    using enum SegoeFluentIcons;
-#elif defined(ICONFONTS_ENABLE_SEGOE_MDL2ASSETS)
-    using enum SegoeMdl2Assets;
-#else
-#error No fonts configured for testing
-#endif
-
-    enum class DrawIconOptional
-    {
-        None,
-        FillBox,
-        PixelSize,
-        PointSize,
-        Mode,
-    };
 
 private slots:
     void testSymbolConstructors()

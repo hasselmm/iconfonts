@@ -18,7 +18,8 @@ qt_add_resources(
 
 target_link_libraries(
     IconFontsViewer PRIVATE
-    IconFonts
+    IconFonts_MaterialSymbolsRounded # explicitly select non-optional icon font
+    IconFontsCollection
     Qt::Widgets
 )
 
