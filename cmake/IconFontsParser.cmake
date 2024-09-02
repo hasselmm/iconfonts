@@ -19,15 +19,20 @@ endfunction()
 function(__iconfonts_parse_info_options PREFIX OPTIONS_VARIABLE)
     set(single_values
         prefix              # the prefix of the CSS rules to consider
+        suffix              # the suffix of the CSS rules to consider
         filename            # filename of the stylesheet to parse
-        mapping             # name of the Javascript table containing glyph mapping
+        mapping)            # name of the Javascript table containing glyph mapping
+
+    set(multi_values
         variant)            # an explicit font variant name
 
     string(REGEX REPLACE "[=\t ]+" ";" options_list "${${OPTIONS_VARIABLE}}")
-    cmake_parse_arguments(info "" "${single_values}" "" ${options_list})
+    cmake_parse_arguments(info "" "${single_values}" "${multi_values}" ${options_list})
     iconfonts_reject_unparsed_arguments(info)
 
-    foreach(option IN LISTS single_values)
+    list(JOIN info_variant " " info_variant)
+
+    foreach(option IN LISTS single_values multi_values)
         set("${PREFIX}_${option}" "${info_${option}}" PARENT_SCOPE)
     endforeach()
 endfunction()
@@ -310,11 +315,12 @@ function(__iconfonts_collect_icons_css OUTPUT_VARIABLE INFO_FILEPATH OPTIONS)
     iconfonts_require_mandatory_arguments(css prefix)
 
     iconfonts_encode_regex("${css_prefix}" prefix)
+    iconfonts_encode_regex("${css_suffix}" suffix)
 
     set(ws          "[\t ]")
     set(nws         "[^\t ]")
     set(qm          "[\"']")
-    set(selector    "${ws}*${prefix}(${nws}+):before${ws}*{")
+    set(selector    "${ws}*${prefix}(${nws}+)${suffix}:before${ws}*{")
     set(attribute   "${ws}*content${ws}*:${ws}*(${qm}${nws}+)")
 
     file(

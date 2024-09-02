@@ -152,6 +152,44 @@ iconfonts_add_font(
     LICENSE_FILEHASH    "SHA1=f52346a950a2b030b6d0bd2d2924f8287880d6f2"
 )
 
+# Fluent UI #-----------------------------------------------------------------------------------------------------------
+
+# FIXME somehow test we got all size variants
+# FIXME share symbols with Segoe UI Fluent if reasonable
+iconfonts_add_font_family(
+    FONT_FAMILY "Fluent System Icons"
+    QUICK_TARGET QuickIconFonts
+    TARGET IconFonts
+
+    BASE_URL            "https://github.com/microsoft/fluentui-system-icons@1.1.256"
+    RESOURCE_PREFIX     "/microsoft/fluentui"
+    VARIANT_PATTERN     "FluentSystemIcons-(.*)"
+
+    FONT_VARIANTS
+        "fonts/FluentSystemIcons-Filled.ttf     :SHA1=816b3c1bd885069da1150417e12273ae581149c1
+        :fonts/FluentSystemIcons-Filled.css     :SHA1=ab8c15c1cb75057dbecd464e9c8c7dfaab5cb134
+        :prefix=.icon-ic_fluent_"
+
+        "fonts/FluentSystemIcons-Light.ttf      :SHA1=3b803980bbd6e1042f5c6702c58f095de6830136
+        :fonts/FluentSystemIcons-Light.css      :SHA1=c9eccf04ae92f61d54c0cb64c6aaa6467e4f68a9
+        :prefix=.icon-ic_fluent_ suffix=_32_light variant=Light 32"
+
+        "fonts/FluentSystemIcons-Regular.ttf    :SHA1=ae1481c459ddea96c5feff0f5be4f05167d4f98d
+        :fonts/FluentSystemIcons-Regular.css    :SHA1=35411b85e8f066804e81146ed235ed7a15ad6345
+        :prefix=.icon-ic_fluent_"
+
+        "fonts/FluentSystemIcons-Resizable.ttf  :SHA1=691d9fb80518694a511a2811f756aaa3449a15ff
+        :fonts/FluentSystemIcons-Resizable.css  :SHA1=c7a56f50d55e8b4270d64913908821728969568f
+        :prefix=.icon-ic_fluent_ suffix=_20_filled variant=Resizable Filled 20"
+
+        "fonts/FluentSystemIcons-Resizable.ttf  :SHA1=691d9fb80518694a511a2811f756aaa3449a15ff
+        :fonts/FluentSystemIcons-Resizable.css  :SHA1=c7a56f50d55e8b4270d64913908821728969568f
+        :prefix=.icon-ic_fluent_ suffix=_20_regular variant=Resizable Regular 20"
+
+    LICENSE_FILEPATH    "LICENSE"
+    LICENSE_FILEHASH    "SHA1=6c5a28c572e38adadf8d9819a2ceeb0eb82a6bc3"
+)
+
 # Font APEX  #----------------------------------------------------------------------------------------------------------
 
 iconfonts_add_font_family(
