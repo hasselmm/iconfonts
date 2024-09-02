@@ -19,6 +19,7 @@ endfunction()
 function(__iconfonts_parse_info_options PREFIX OPTIONS_VARIABLE)
     set(single_values
         prefix              # the prefix of the CSS rules to consider
+        suffix              # the suffix of the CSS rules to consider
         filename            # filename of the stylesheet to parse
         mapping             # name of the Javascript table containing glyph mapping
         variant)            # an explicit font variant name
@@ -337,11 +338,12 @@ function(__iconfonts_collect_icons_css OUTPUT_VARIABLE INFO_FILEPATH OPTIONS)
     iconfonts_require_mandatory_arguments(css prefix)
 
     iconfonts_encode_regex("${css_prefix}" prefix)
+    iconfonts_encode_regex("${css_suffix}" suffix)
 
     set(ws          "[\t ]")
     set(nws         "[^\t ]")
     set(qm          "[\"']")
-    set(selector    "${ws}*${prefix}(${nws}+):before${ws}*{")
+    set(selector    "${ws}*${prefix}(${nws}+)${suffix}:before${ws}*{")
     set(attribute   "${ws}*content${ws}*:${ws}*(${qm}${nws}+)")
 
     file(
