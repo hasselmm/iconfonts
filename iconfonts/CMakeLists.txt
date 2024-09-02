@@ -153,6 +153,47 @@ iconfonts_add_font(
     LICENSE_FILEHASH    "SHA1=f52346a950a2b030b6d0bd2d2924f8287880d6f2"
 )
 
+# Fluent UI #-----------------------------------------------------------------------------------------------------------
+
+iconfonts_add_font_family(
+    FONT_FAMILY "Fluent System Icons"
+    QUICK_TARGET QuickIconFonts
+    TARGET IconFonts
+
+    BASE_URL            "https://github.com/microsoft/fluentui-system-icons@1.1.258"
+    RESOURCE_PREFIX     "/microsoft/fluentui"
+    VARIANT_PATTERN     "FluentSystemIcons-(.*)"
+
+    FONT_VARIANTS
+        "fonts/FluentSystemIcons-Filled.ttf     :SHA1=2e4e1f54bb65b481348007f8a9f5be005b45da40
+        :fonts/FluentSystemIcons-Filled.css     :SHA1=f0341cf72dab19905f192c363d1e79b2648f8a15
+        :prefix=.icon-ic_fluent_ suffix=_{size}_filled sizes=10,12,16,20,24,28,32,48
+         variant=Filled {size}"
+
+        "fonts/FluentSystemIcons-Light.ttf      :SHA1=43b0b2a7b76c19d478fd39556a6913264e137b02
+        :fonts/FluentSystemIcons-Light.css      :SHA1=cceed48d2504c74a1bbf9963209899bf36e8131b
+        :prefix=.icon-ic_fluent_ suffix=_{size}_light sizes=32
+         variant=Light {size}"
+
+        "fonts/FluentSystemIcons-Regular.ttf    :SHA1=e445f32bd56ce79ed871a18a70c6586808457563
+        :fonts/FluentSystemIcons-Regular.css    :SHA1=4fe152f8c3ef7665e7c5d3ef18020c41680d2853
+        :prefix=.icon-ic_fluent_ suffix=_{size}_regular sizes=10,12,16,20,24,28,32,48
+         variant=Regular {size}"
+
+        "fonts/FluentSystemIcons-Resizable.ttf  :SHA1=c875678818d1a42ddcb0c73a44c4dbb60b2b17b8
+        :fonts/FluentSystemIcons-Resizable.css  :SHA1=2bc308a62a58faa9da92804cb249ac75c4ecf4b7
+        :prefix=.icon-ic_fluent_ suffix=_{size}_filled sizes=20
+         variant=Resizable Filled {size}"
+
+        "fonts/FluentSystemIcons-Resizable.ttf  :SHA1=c875678818d1a42ddcb0c73a44c4dbb60b2b17b8
+        :fonts/FluentSystemIcons-Resizable.css  :SHA1=2bc308a62a58faa9da92804cb249ac75c4ecf4b7
+        :prefix=.icon-ic_fluent_ suffix=_{size}_regular sizes=20
+         variant=Resizable Regular {size}"
+
+    LICENSE_FILEPATH    "LICENSE"
+    LICENSE_FILEHASH    "SHA1=6c5a28c572e38adadf8d9819a2ceeb0eb82a6bc3"
+)
+
 # Font APEX  #----------------------------------------------------------------------------------------------------------
 
 iconfonts_add_font_family(
