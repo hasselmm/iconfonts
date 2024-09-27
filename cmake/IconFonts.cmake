@@ -126,7 +126,7 @@ function(iconfonts_add_font)
 
     set(resource_dirpath "${ICONFONTS_RESOURCE_DIR}") # ----------------------------------------------- build file paths
 
-    __iconfonts_make_symbol("${ICONFONTS_FONT_FAMILY}"  font_family_symbol)
+    __iconfonts_make_symbol("${ICONFONTS_FONT_FAMILY}" font_family_symbol)
     string(APPEND resource_dirpath "/${font_family_symbol}")
     set(info_dirpath "${resource_dirpath}")
 
