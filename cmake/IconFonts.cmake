@@ -11,6 +11,7 @@ include(IconFontsUtilities)
 function(iconfonts_add_font)
     set(options
         OPTIONAL                # the option for enabling this font is disabled by default for OPTIONAL fonts
+        PYTHON_REQUIRED         # skip and warn if no Python interpreter is available
         SKIP_RESOURCES)         # do not generate Qt resources
 
     set(mandatory_values
@@ -39,6 +40,11 @@ function(iconfonts_add_font)
 
     iconfonts_reject_unparsed_arguments(ICONFONTS)
     iconfonts_require_mandatory_arguments(ICONFONTS ${mandatory_values})
+
+    if (ICONFONTS_PYTHON_REQUIRED AND NOT TARGET Python3::Interpreter)
+        message(WARNING "Skipping ${ICONFONTS_FONT_FAMILY}  ${ICONFONTS_FONT_VARIANT} because no Python interpreter was not found")
+        return()
+    endif()
 
     if (ICONFONTS_OPTIONAL)
         set(ICONFONTS_DEFAULT_VALUE OFF)
@@ -234,7 +240,8 @@ endfunction(iconfonts_add_font)
 # FIXME doxs
 function(iconfonts_add_font_family)
     set(options
-        OPTIONAL)               # the option for enabling this font is disabled by default for OPTIONAL fonts
+        OPTIONAL                # the option for enabling this font is disabled by default for OPTIONAL fonts
+        PYTHON_REQUIRED)        # skip and warn if no Python interpreter is available
 
     set(mandatory_values
         TARGET                  # the target to which to add this font variant
@@ -261,10 +268,14 @@ function(iconfonts_add_font_family)
     iconfonts_require_mandatory_arguments(ICONFONTS ${mandatory_values} FONT_VARIANTS)
     iconfonts_unescape(ICONFONTS_VARIANT_PATTERN)
 
+    set(extra_options)
+
     if (ICONFONTS_OPTIONAL)
-        set(ICONFONTS_OPTIONAL "OPTIONAL")
-    else()
-        unset(ICONFONTS_OPTIONAL)
+        list(APPEND extra_options "OPTIONAL")
+    endif()
+
+    if (ICONFONTS_PYTHON_REQUIRED)
+        list(APPEND extra_options "PYTHON_REQUIRED")
     endif()
 
     unset(combined_resources_list) # ------------------------------------------------------------- collect font variants
@@ -306,7 +317,7 @@ function(iconfonts_add_font_family)
         iconfonts_add_font(
             TARGET                  "${ICONFONTS_TARGET}"
             QUICK_TARGET            "${ICONFONTS_QUICK_TARGET}"
-                                    "${ICONFONTS_OPTIONAL}"
+                                    "${extra_options}"
             SKIP_RESOURCES                                          # must collect resources for all variants here
 
             BASE_URL                "${ICONFONTS_BASE_URL}"

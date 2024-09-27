@@ -21,7 +21,7 @@ enable_testing()
 
 find_package(
     PythonModules
-    REQUIRED COMPONENTS fontTools fontTools.ttx brotli)
+    COMPONENTS fontTools fontTools.ttx brotli)
 
 find_package(
     Qt6

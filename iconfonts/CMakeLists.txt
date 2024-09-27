@@ -90,6 +90,7 @@ iconfonts_add_font(
     FONT_FAMILY "Bootstrap"
     QUICK_TARGET QuickIconFonts
     TARGET IconFonts
+    PYTHON_REQUIRED
 
     BASE_URL            "https://github.com/twbs/icons@v1.11.3"
     RESOURCE_PREFIX     "/bootstrap/icons"
@@ -269,6 +270,7 @@ iconfonts_add_font(
     FONT_FAMILY "IcoMoon Free"
     QUICK_TARGET QuickIconFonts
     TARGET IconFonts
+    PYTHON_REQUIRED
 
     BASE_URL            "https://github.com/Keyamoon/IcoMoon-Free@d006795ede82361e1bac1ee76f215cf1dc51e4ca"
     RESOURCE_PREFIX     "/icomoon/free"
