@@ -420,6 +420,11 @@ function(__iconfonts_collect_icons_css OUTPUT_VARIABLE INFO_FILEPATH OPTIONS)
         endif()
     endif()
 
+    if (NOT icon_definitions) # ----------------------------------------------------- validate selector expression early
+        message(FATAL_ERROR "No icons found for selector '${selector}' in ${INFO_FILEPATH}")
+        return()
+    endif()
+
     set("${OUTPUT_VARIABLE}" ${icon_definitions} PARENT_SCOPE)
 endfunction()
 
