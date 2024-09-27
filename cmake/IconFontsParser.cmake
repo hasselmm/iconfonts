@@ -237,6 +237,7 @@ function(__iconfonts_collect_icons_materialsymbols OUTPUT_VARIABLE INFO_FILEPATH
         __iconfonts_collect_icons_python("${OUTPUT_VARIABLE}" "${INFO_FILEPATH}")
     else()
         file(STRINGS "${INFO_FILEPATH}" codepoint_list)
+        set(name_list)
 
         foreach(codepoint IN LISTS codepoint_list)
             string(REGEX REPLACE " +" ";" codepoint "${codepoint}")
@@ -245,7 +246,33 @@ function(__iconfonts_collect_icons_materialsymbols OUTPUT_VARIABLE INFO_FILEPATH
             list(GET codepoint 1 unicode)
 
             __iconfonts_make_symbol("${name}" name)
+
+            if (name IN_LIST name_list) # --------------------------------- find alternate name for confliciting symbols
+                message(STATUS "Searching alternate name for ${name}...")
+
+                foreach(i RANGE 0 999)
+                    if (i GREATER 0)
+                        set(alt_name "${name}Alt${i}")
+                    else()
+                        set(alt_name "${name}Alt")
+                    endif()
+
+                    if (NOT alt_name IN_LIST name_list)
+                        set(name "${alt_name}")
+                        unset(alt_name)
+                        break()
+                    endif()
+                endforeach()
+
+                if (alt_name)
+                    message(FATAL_ERROR "Could not find alternate name for ${name}")
+                    return()
+                endif()
+            endif()
+
             __iconfonts_add_enumkey(icon_definitions "${name}" "0x${unicode}")
+
+            list(APPEND name_list "${name}")
         endforeach()
     endif()
 
