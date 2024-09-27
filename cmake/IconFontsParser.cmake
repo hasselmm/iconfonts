@@ -24,9 +24,10 @@ function(__iconfonts_parse_info_options PREFIX OPTIONS_VARIABLE)
         mapping)            # name of the Javascript table containing glyph mapping
 
     set(multi_values
+        sizes               # possible sizes of the font
         variant)            # an explicit font variant name
 
-    string(REGEX REPLACE "[=\t ]+" ";" options_list "${${OPTIONS_VARIABLE}}")
+    string(REGEX REPLACE "[=,\t\r\n ]+" ";" options_list "${${OPTIONS_VARIABLE}}")
     cmake_parse_arguments(info "" "${single_values}" "${multi_values}" ${options_list})
     iconfonts_reject_unparsed_arguments(info)
 
