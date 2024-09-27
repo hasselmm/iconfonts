@@ -400,6 +400,26 @@ function(__iconfonts_collect_icons_css OUTPUT_VARIABLE INFO_FILEPATH OPTIONS)
         endif()
     endforeach()
 
+    if (css_sizes) # --------------------------------------------------- validate that expected sizes are actually sound
+        string(REGEX REPLACE "[()]+" "" size_check "${selector}")
+        string(REGEX REPLACE "[0-9]+" "([0-9]+)" size_check "${size_check}")
+
+        file(
+            STRINGS "${INFO_FILEPATH}" actual_sizes
+            REGEX "^${size_check}")
+
+        list(TRANSFORM actual_sizes REPLACE "^${size_check}.*" "\\1")
+        list(REMOVE_DUPLICATES actual_sizes)
+        list(SORT actual_sizes)
+
+        if (NOT css_sizes STREQUAL actual_sizes)
+            message(FATAL_ERROR
+                "Symbol sizes do not match for ${INFO_FILEPATH} "
+                "(expected sizes: ${css_sizes}, actual sizes: ${actual_sizes})")
+            return()
+        endif()
+    endif()
+
     set("${OUTPUT_VARIABLE}" ${icon_definitions} PARENT_SCOPE)
 endfunction()
 
