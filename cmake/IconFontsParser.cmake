@@ -19,15 +19,21 @@ endfunction()
 function(__iconfonts_parse_info_options PREFIX OPTIONS_VARIABLE)
     set(single_values
         prefix              # the prefix of the CSS rules to consider
+        suffix              # the suffix of the CSS rules to consider
         filename            # filename of the stylesheet to parse
-        mapping             # name of the Javascript table containing glyph mapping
+        mapping)            # name of the Javascript table containing glyph mapping
+
+    set(multi_values
+        sizes               # possible sizes of the font
         variant)            # an explicit font variant name
 
-    string(REGEX REPLACE "[=\t ]+" ";" options_list "${${OPTIONS_VARIABLE}}")
-    cmake_parse_arguments(info "" "${single_values}" "" ${options_list})
+    string(REGEX REPLACE "[=,\t\r\n ]+" ";" options_list "${${OPTIONS_VARIABLE}}")
+    cmake_parse_arguments(info "" "${single_values}" "${multi_values}" ${options_list})
     iconfonts_reject_unparsed_arguments(info)
 
-    foreach(option IN LISTS single_values)
+    list(JOIN info_variant " " info_variant)
+
+    foreach(option IN LISTS single_values multi_values)
         set("${PREFIX}_${option}" "${info_${option}}" PARENT_SCOPE)
     endforeach()
 endfunction()
@@ -337,11 +343,12 @@ function(__iconfonts_collect_icons_css OUTPUT_VARIABLE INFO_FILEPATH OPTIONS)
     iconfonts_require_mandatory_arguments(css prefix)
 
     iconfonts_encode_regex("${css_prefix}" prefix)
+    iconfonts_encode_regex("${css_suffix}" suffix)
 
     set(ws          "[\t ]")
     set(nws         "[^\t ]")
     set(qm          "[\"']")
-    set(selector    "${ws}*${prefix}(${nws}+):before${ws}*{")
+    set(selector    "${ws}*${prefix}(${nws}+)${suffix}:before${ws}*{")
     set(attribute   "${ws}*content${ws}*:${ws}*(${qm}${nws}+)")
 
     file(
@@ -392,6 +399,31 @@ function(__iconfonts_collect_icons_css OUTPUT_VARIABLE INFO_FILEPATH OPTIONS)
             unset(name)
         endif()
     endforeach()
+
+    if (css_sizes) # --------------------------------------------------- validate that expected sizes are actually sound
+        string(REGEX REPLACE "[()]+" "" size_check "${selector}")
+        string(REGEX REPLACE "[0-9]+" "([0-9]+)" size_check "${size_check}")
+
+        file(
+            STRINGS "${INFO_FILEPATH}" actual_sizes
+            REGEX "^${size_check}")
+
+        list(TRANSFORM actual_sizes REPLACE "^${size_check}.*" "\\1")
+        list(REMOVE_DUPLICATES actual_sizes)
+        list(SORT actual_sizes)
+
+        if (NOT css_sizes STREQUAL actual_sizes)
+            message(FATAL_ERROR
+                "Symbol sizes do not match for ${INFO_FILEPATH} "
+                "(expected sizes: ${css_sizes}, actual sizes: ${actual_sizes})")
+            return()
+        endif()
+    endif()
+
+    if (NOT icon_definitions) # ----------------------------------------------------- validate selector expression early
+        message(FATAL_ERROR "No icons found for selector '${selector}' in ${INFO_FILEPATH}")
+        return()
+    endif()
 
     set("${OUTPUT_VARIABLE}" ${icon_definitions} PARENT_SCOPE)
 endfunction()

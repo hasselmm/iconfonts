@@ -28,6 +28,7 @@ function(iconfonts_add_font)
         QUICK_TARGET            # the target to which to add QtQuick specific sources
         ARCHIVE                 # path or URL of an archive to download, instead of directly accessing the web
         ARCHIVE_FILEHASH        # SHA1 hash for `ARCHIVE`
+        BASE_VARIANT            # the font variant without variable parts like size
         FONT_VARIANT            # the font variant within the font's family
         FONT_FILEPATH           # path of the font file; releative to `BASE_URL`
         FONT_FILEHASH           # SHA1 hash for `FONT_FILEPATH`
@@ -130,7 +131,10 @@ function(iconfonts_add_font)
     string(APPEND resource_dirpath "/${font_family_symbol}")
     set(info_dirpath "${resource_dirpath}")
 
-    if (ICONFONTS_FONT_VARIANT)
+    if (ICONFONTS_BASE_VARIANT)
+        __iconfonts_make_symbol("${ICONFONTS_BASE_VARIANT}" font_variant_symbol)
+        string(APPEND info_dirpath "/${font_variant_symbol}")
+    elseif (ICONFONTS_FONT_VARIANT)
         __iconfonts_make_symbol("${ICONFONTS_FONT_VARIANT}" font_variant_symbol)
         string(APPEND info_dirpath "/${font_variant_symbol}")
     endif()
@@ -314,34 +318,55 @@ function(iconfonts_add_font_family)
                 "could not find a 'variant' entry in the info file options of FONT_VARIANTS.")
         endif()
 
-        iconfonts_add_font(
-            TARGET                  "${ICONFONTS_TARGET}"
-            QUICK_TARGET            "${ICONFONTS_QUICK_TARGET}"
-                                    "${extra_options}"
-            SKIP_RESOURCES                                          # must collect resources for all variants here
+        if (info_sizes) # --------------------------------------------------- allow multiple font sizes per font variant
+            string(REGEX REPLACE " *\{size\} *" " " base_variant "${font_variant}")
+            string(REGEX REPLACE "^ +" "" base_variant "${base_variant}")
+            string(REGEX REPLACE " \$" "" base_variant "${base_variant}")
+            iconfonts_show(font_variant base_variant)
+        else()
+            set(base_variant "${font_variant}")
+            set(info_sizes NOTFOUND)
+        endif()
 
-            BASE_URL                "${ICONFONTS_BASE_URL}"
-            RESOURCE_PREFIX         "${ICONFONTS_RESOURCE_PREFIX}"
+        foreach (size IN LISTS info_sizes)
+            if (size) # ---------------------------------------------- replace place holders in font variant and options
+                string(REPLACE "{size}" "${size}" size_variant "${font_variant}")
+                string(REPLACE "{size}" "${size}" size_options "${info_options}")
+            else()
+                set(size_variant "${font_variant}")
+                set(size_options "${icon_options}")
+            endif()
 
-            ARCHIVE                 "${ICONFONTS_ARCHIVE}"
-            ARCHIVE_FILEHASH        "${ICONFONTS_ARCHIVE_FILEHASH}"
+            iconfonts_add_font(
+                TARGET                  "${ICONFONTS_TARGET}"
+                QUICK_TARGET            "${ICONFONTS_QUICK_TARGET}"
+                                        "${extra_options}"
+                SKIP_RESOURCES                                          # must collect resources for all variants here
 
-            FONT_FAMILY             "${ICONFONTS_FONT_FAMILY}"
-            FONT_VARIANT            "${font_variant}"
-            FONT_FILEPATH           "${font_filepath}"
-            FONT_FILEHASH           "${font_filehash}"
+                BASE_URL                "${ICONFONTS_BASE_URL}"
+                RESOURCE_PREFIX         "${ICONFONTS_RESOURCE_PREFIX}"
 
-            INFO_FILEPATH           "${info_filepath}"
-            INFO_FILEHASH           "${info_filehash}"
-            INFO_OPTIONS            "${info_options}"
-            INFO_FILETYPE           "${ICONFONTS_INFO_FILETYPE}"
+                ARCHIVE                 "${ICONFONTS_ARCHIVE}"
+                ARCHIVE_FILEHASH        "${ICONFONTS_ARCHIVE_FILEHASH}"
 
-            LICENSE_FILEPATH        "${ICONFONTS_LICENSE_FILEPATH}"
-            LICENSE_FILEHASH        "${ICONFONTS_LICENSE_FILEHASH}"
+                FONT_FAMILY             "${ICONFONTS_FONT_FAMILY}"
+                FONT_VARIANT            "${size_variant}"
+                BASE_VARIANT            "${base_variant}"
+                FONT_FILEPATH           "${font_filepath}"
+                FONT_FILEHASH           "${font_filehash}"
 
-            OUTPUT_RESOURCES_LIST    resources_list)
+                INFO_FILEPATH           "${info_filepath}"
+                INFO_FILEHASH           "${info_filehash}"
+                INFO_OPTIONS            "${size_options}"
+                INFO_FILETYPE           "${ICONFONTS_INFO_FILETYPE}"
 
-        list(APPEND combined_resources_list ${resources_list})
+                LICENSE_FILEPATH        "${ICONFONTS_LICENSE_FILEPATH}"
+                LICENSE_FILEHASH        "${ICONFONTS_LICENSE_FILEHASH}"
+
+                OUTPUT_RESOURCES_LIST    resources_list)
+
+            list(APPEND combined_resources_list ${resources_list})
+        endforeach()
     endforeach()
 
     if (ICONFONTS_RESOURCE_PREFIX) # --------------------------------------------------------- generate Qt resource file
