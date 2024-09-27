@@ -28,6 +28,7 @@ function(iconfonts_add_font)
         QUICK_TARGET            # the target to which to add QtQuick specific sources
         ARCHIVE                 # path or URL of an archive to download, instead of directly accessing the web
         ARCHIVE_FILEHASH        # SHA1 hash for `ARCHIVE`
+        BASE_VARIANT            # the font variant without variable parts like size
         FONT_VARIANT            # the font variant within the font's family
         FONT_FILEPATH           # path of the font file; releative to `BASE_URL`
         FONT_FILEHASH           # SHA1 hash for `FONT_FILEPATH`
@@ -130,7 +131,10 @@ function(iconfonts_add_font)
     string(APPEND resource_dirpath "/${font_family_symbol}")
     set(info_dirpath "${resource_dirpath}")
 
-    if (ICONFONTS_FONT_VARIANT)
+    if (ICONFONTS_BASE_VARIANT)
+        __iconfonts_make_symbol("${ICONFONTS_BASE_VARIANT}" font_variant_symbol)
+        string(APPEND info_dirpath "/${font_variant_symbol}")
+    elseif (ICONFONTS_FONT_VARIANT)
         __iconfonts_make_symbol("${ICONFONTS_FONT_VARIANT}" font_variant_symbol)
         string(APPEND info_dirpath "/${font_variant_symbol}")
     endif()
