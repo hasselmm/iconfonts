@@ -42,7 +42,7 @@ function(iconfonts_add_font)
     iconfonts_require_mandatory_arguments(ICONFONTS ${mandatory_values})
 
     if (ICONFONTS_PYTHON_REQUIRED AND NOT TARGET Python3::Interpreter)
-        message(WARNING "Skipping ${ICONFONTS_FONT_FAMILY}  ${ICONFONTS_FONT_VARIANT} because no Python interpreter was not found")
+        message(WARNING "Skipping ${ICONFONTS_FONT_FAMILY}  ${ICONFONTS_FONT_VARIANT} because no Python interpreter was found")
         return()
     endif()
 
