@@ -309,6 +309,7 @@ function(iconfonts_finalize_target TARGET)
 
     set(known_fonts_include_list ${FINALIZE_FONT_NAMESPACES}) # ------------------ prepare variables for generating code
     list(TRANSFORM known_fonts_include_list REPLACE "::" "")
+    list(TRANSFORM known_fonts_include_list REPLACE "_" "")
     list(TRANSFORM known_fonts_include_list TOLOWER)
     list(TRANSFORM known_fonts_include_list PREPEND "#include \"")
     list(TRANSFORM known_fonts_include_list APPEND ".h\"")
