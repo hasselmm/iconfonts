@@ -113,6 +113,11 @@ endfunction()
 # ----------------------------------------------------------------------------------------------------------------------
 function(__iconfonts_convert_webfont FONT_FILEPATH OUTPUT_DIRECTORY OUTPUT_VARIABLE)
     if (FONT_FILEPATH MATCHES "\\.woff")
+        if (NOT Python3::Interpreter)
+            message(FATAL_ERROR "A Python interpreter is needed to convert webfonts")
+            return()
+        endif()
+
         cmake_path(GET FONT_FILEPATH STEM basename)
 
         set(fonttool_filepath "${OUTPUT_DIRECTORY}/${basename}.ttx")
